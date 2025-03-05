@@ -1,8 +1,8 @@
 # gettext-cloud-translator
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit)
-![GitHub all releases](https://img.shields.io/github/downloads/rgglez/gettext-cloud-translator/total) 
-![GitHub issues](https://img.shields.io/github/issues/rgglez/gettext-cloud-translator) 
+![GitHub all releases](https://img.shields.io/github/downloads/rgglez/gettext-cloud-translator/total)
+![GitHub issues](https://img.shields.io/github/issues/rgglez/gettext-cloud-translator)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/rgglez/gettext-cloud-translator)
 
 ## Gettext Cloud Translator

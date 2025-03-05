@@ -25,7 +25,7 @@ class TranslatorAzure(TranslatorService):
             'Ocp-Apim-Subscription-Region': self.config.location,
             'Content-type': 'application/json',
             'X-ClientTraceId': str(uuid.uuid4())
-        }            
+        }
     # __init__
 
     ###########################################################################
