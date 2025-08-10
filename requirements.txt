@@ -1,4 +1,6 @@
-polib==1.2.0
-openai==v1.3.6
-python-dotenv==1.0.0
-pytest==8.2.2
+polib
+openai
+python-dotenv
+pytest
+rich
+requests
