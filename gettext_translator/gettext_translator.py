@@ -26,7 +26,6 @@ limitations under the License.
 
 import argparse
 import logging
-import os
 import sys
 import polib
 from pydantic import ValidationError
@@ -77,7 +76,7 @@ class GettextCloudTranslator:
         if entry:
             logging.info("Applying to %s", entry.msgid)
             entry.msgstr = translated_text
-    # update_po_entry 
+    # update_po_entry
 
     # -------------------------------------------------------------------------
 
@@ -137,48 +136,25 @@ class GettextCloudTranslator:
 
 
 def parse_cli_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", type=str)
-    parser.add_argument("--apikey", type=str)
-    parser.add_argument("--model", type=str)
-    parser.add_argument("--location", type=str)
-    parser.add_argument("--po", type=str)
-    parser.add_argument("--src", type=str)
-    parser.add_argument("--dst", type=str)
-    parser.add_argument("--fuzzy", type=lambda x: x.lower() in ["true", "1", "yes"])
-    parser.add_argument("--bulk", type=lambda x: x.lower() in ["true", "1", "yes"])
-    parser.add_argument("--bulksize", type=int)
-    parser.add_argument("--config", type=str, default="config.yaml", help="Ruta al archivo YAML")
+    parser = argparse.ArgumentParser(description="Translate .po files")
+    parser.add_argument("--version", action="version", version=f'%(prog)s {__version__}')
+    parser.add_argument("--backend", type=str, required=True, default="azure", choices=["chatgpt", "azure"])
+    parser.add_argument("--apikey", type=str, help="Service API key")
+    parser.add_argument("--model", type=str, default="gpt-3.5-turbo-1106", help="OpenAI model to use for translations, "
+                        "for the ChatGPT backend.")
+    parser.add_argument("--location", type=str, help="Microsoft Azure location")
+    parser.add_argument("--po", type=str, required=True, help="Input .po file")
+    parser.add_argument("--src", type=str, required=False, choices=["en", "es"], default="en", help="The ISO code for "
+                        "the language of the source strings. Defaults to 'en' (English)")
+    parser.add_argument("--dst", type=str, required=False, help="The ISO code for the language to translate to")
+    parser.add_argument("--fuzzy", type=lambda x: x.lower() in ["true", "1", "yes"], help="Remove fuzzy entries")
+    parser.add_argument("--bulk", type=lambda x: x.lower() in ["true", "1", "yes"], help="Use bulk translation mode")
+    parser.add_argument("--bulksize", type=int, help="Batch size for bulk translation")
+    parser.add_argument("--config", type=str, default="config.yaml", help="Path to the configuration file")
     args = parser.parse_args()
     return args
 
 # -----------------------------------------------------------------------------
-
-
-def main():
-    """Main function to parse arguments and initiate processing."""
-    parser = argparse.ArgumentParser(description="Scan and process .po files")
-    parser.add_argument("--version", action="version", version=f'%(prog)s {__version__}')
-    parser.add_argument("--backend", required=True, default="azure", choices=["chatgpt", "azure"])
-    parser.add_argument("--apikey", help="Service API key")
-    parser.add_argument("--model", default="gpt-3.5-turbo-1106", help="OpenAI model to use for translations, for the "
-                        "ChatGPT backend.")
-    parser.add_argument("--location", help="Microsoft Azure location")
-    parser.add_argument("--file", required=True, help="Input .po file")
-    parser.add_argument("--srclang", required=False, choices=["en", "es"], default="en", help="The ISO code for the "
-                        "language of the source strings. Defaults to 'en' (English)")
-    parser.add_argument("--dstlang", required=False, help="The ISO code for the language to translate to")
-    parser.add_argument("--fuzzy", action="store_true", help="Remove fuzzy entries")
-    parser.add_argument("--bulk", action="store_true", help="Use bulk translation mode")
-    parser.add_argument("--bulksize", default=49500, type=int, help="Batch size for bulk translation")        
-
-    args = parser.parse_args()
-    args.apikey = args.apikey if args.apikey else os.getenv("API_KEY")
-
-
-# main
-
-###############################################################################
 
 
 if __name__ == "__main__":

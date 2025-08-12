@@ -1,6 +1,5 @@
 polib
 openai
-python-dotenv
 pytest
 rich
 requests
@@ -11,3 +10,4 @@ protobuf>=3.20.0       # Required dependency
 SentencePiece
 Flax
 sacremoses
+pydantic_settings
