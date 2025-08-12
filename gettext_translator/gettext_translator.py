@@ -1,8 +1,8 @@
 """
 Gettext Translator
 
-This Python script provides a tool for translating gettext .po files 
-using OpenAI's API, Microsoft Azure Translator or local AI models. 
+This Python script provides a tool for translating gettext .po files
+using OpenAI's API, Microsoft Azure Translator or local AI models.
 It is designed to handle both bulk and individual translation modes.
 
 ---
@@ -46,7 +46,7 @@ class GettextCloudTranslator:
         self.config = service.config
 
         if self.config.fuzzy:
-            self.disable_fuzzy_translations(self.config.file)        
+            self.disable_fuzzy_translations(self.config.file)
     # __init__
 
     # -------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class GettextCloudTranslator:
             self.po_file.save(self.config.file)
             logging.info("Fuzzy translations disabled in file: %s", self.config.file)
         except Exception as e:  # pylint: disable=W0718
-            logging.error("Error while disabling fuzzy translations in file %s: %s", self.config.filepo_file_path, e)    
+            logging.error("Error while disabling fuzzy translations in file %s: %s", self.config.filepo_file_path, e)
     # disable_fuzzy_translations
 
     # -------------------------------------------------------------------------
@@ -91,12 +91,12 @@ class GettextCloudTranslator:
             else:
                 logging.warning("No original text found for index %s", translation["msgid"])
     # apply_translations_to_po_file
-  
+
     # -------------------------------------------------------------------------
 
     def process_translations(self, texts_to_translate):
         """Processes translations either in bulk or one by one."""
-        if self.config.bulk:          
+        if self.config.bulk:
             return self.service.translate_in_bulk(texts_to_translate)
         else:
             return self.service.translate_one_by_one(texts_to_translate)
@@ -108,7 +108,7 @@ class GettextCloudTranslator:
         try:
             po_file = polib.pofile(self.config.file)
             file_lang = po_file.metadata.get('Language', '')
-            
+
             if file_lang[:2] != self.config.dstlang:
                 logging.warning("Skipping .po file due to inferred language mismatch: %s", self.config.file)
                 return
@@ -118,7 +118,7 @@ class GettextCloudTranslator:
                 for entry in po_file
                 if not entry.msgstr and entry.msgid and 'fuzzy' not in entry.flags
             ]
-            
+
             translated_texts = self.process_translations(texts_to_translate)
 
             logging.info("Applying %i translations to %s", len(translated_texts), self.config.file)
@@ -128,7 +128,7 @@ class GettextCloudTranslator:
 
             logging.info("Finished processing .po file: %s", self.config.file)
         except Exception as e:  # pylint: disable=W0718
-            logging.error("Error processing file %s: %s", self.config.file, e)    
+            logging.error("Error processing file %s: %s", self.config.file, e)
     # process_po_file
 # GettextCloudTranslator
 
@@ -162,12 +162,13 @@ if __name__ == "__main__":
 
     class MySettings(Settings):
         @classmethod
-        def settings_customise_sources(cls, settings_cls, init_settings, env_settings):
+        def settings_customise_sources(cls, settings_cls, init_settings, env_settings, file_secret_settings):
             return (
                 YamlConfigSettingsSource(settings_cls, cli_args.config),
                 env_settings,
                 init_settings,
             )
+        # settings_customise_sources
 
     try:
         settings = MySettings(**{k: v for k, v in vars(cli_args).items() if v is not None})
