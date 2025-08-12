@@ -29,6 +29,7 @@ import logging
 import sys
 import polib
 from pydantic import ValidationError
+from pydantic_settings import PydanticBaseSettingsSource
 from version import __version__
 from translator_factory import TranslatorFactory
 from settings import Settings, YamlConfigSettingsSource
@@ -162,15 +163,21 @@ if __name__ == "__main__":
 
     class MySettings(Settings):
         @classmethod
-        def settings_customise_sources(cls, settings_cls, init_settings, env_settings, file_secret_settings):
+        def settings_customise_sources(
+            cls,
+            settings_cls,
+            init_settings: PydanticBaseSettingsSource,
+            env_settings: PydanticBaseSettingsSource,
+            file_secret_settings: PydanticBaseSettingsSource,
+        ):
             return (
                 YamlConfigSettingsSource(settings_cls, cli_args.config),
                 env_settings,
                 init_settings,
             )
-        # settings_customise_sources
 
     try:
+        # CLI args sobreescriben YAML y env
         settings = MySettings(**{k: v for k, v in vars(cli_args).items() if v is not None})
         print(settings.model_dump())
     except ValidationError as e:
