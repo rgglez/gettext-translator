@@ -1,3 +1,27 @@
+"""
+Gettext Translator
+
+This Python script provides a tool for translating gettext .po files 
+using OpenAI's API, Microsoft Azure Translator or local AI models. 
+It is designed to handle both bulk and individual translation modes.
+
+---
+
+Copyright 2025 Rodolfo González González
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 import traceback
 import requests
 import uuid
@@ -5,11 +29,12 @@ import uuid
 from translator_service import TranslatorService
 from rich.pretty import pprint
 
-################################################################################
+# -----------------------------------------------------------------------------
+
 
 class TranslatorAzure(TranslatorService):
-    def __init__(self, config) -> None:
-        self.config = config        
+    def __init__(self, settings) -> None:
+        self.config = settings     
 
         path = '/translate'
         self.constructed_url = 'https://api.cognitive.microsofttranslator.com' + path
@@ -28,7 +53,7 @@ class TranslatorAzure(TranslatorService):
         }
     # __init__
 
-    ###########################################################################
+    # -------------------------------------------------------------------------
 
     def translate_one_by_one(self, texts_to_translate):
         try:
@@ -52,11 +77,11 @@ class TranslatorAzure(TranslatorService):
 
         except Exception as e:  # pylint: disable=W0718
             pprint(e)
-            traceback.print_stack()            
+            traceback.print_stack()
             return []
     # translate_one_by_one
 
-    ###########################################################################
+    # -------------------------------------------------------------------------
 
     def translate_in_bulk(self, texts_to_translate):
         try:

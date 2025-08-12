@@ -1,10 +1,10 @@
 """
 version.py
 
-This module defines the version of the gettext-cloud-translator package.
+This module defines the version of the gettext-translator package.
 
 Attributes:
-    __version__ (str): A string representing the version number of the gettext-cloud-translator package.
+    __version__ (str): A string representing the version number of the gettext-translator package.
                       The versioning follows the Semantic Versioning scheme.
 
 Example:

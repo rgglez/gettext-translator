@@ -1,53 +1,45 @@
 """
-Gettext Cloud Translator
+Gettext Translator
 
 This Python script provides a tool for translating gettext .po files 
-using OpenAI's GPT models or cloud services such as Microsoft Azure 
-Translator. It is designed to handle both bulk and individual 
-translation modes.
+using OpenAI's API, Microsoft Azure Translator or local AI models. 
+It is designed to handle both bulk and individual translation modes.
 
 ---
 
-MIT License
+Copyright 2025 Rodolfo González González
 
-Copyright (c) 2024 Rodolfo González
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+    http://www.apache.org/licenses/LICENSE-2.0
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
+
+# -------------------------------------------------------------------------
 
 import argparse
 import logging
 import os
+import sys
 import polib
-
-from dotenv import load_dotenv
+from pydantic import ValidationError
 from version import __version__
 from translator_factory import TranslatorFactory
-from rich.pretty import pprint
+from settings import Settings, YamlConfigSettingsSource
 
-###############################################################################
+# -------------------------------------------------------------------------
 
-# Initialize environment variables and logging
-load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-###############################################################################
+# -------------------------------------------------------------------------
+
 
 class GettextCloudTranslator:
     def __init__(self, service) -> None:
@@ -58,7 +50,7 @@ class GettextCloudTranslator:
             self.disable_fuzzy_translations(self.config.file)        
     # __init__
 
-    ###########################################################################
+    # -------------------------------------------------------------------------
 
     def disable_fuzzy_translations(self):
         """
@@ -75,9 +67,9 @@ class GettextCloudTranslator:
             logging.info("Fuzzy translations disabled in file: %s", self.config.file)
         except Exception as e:  # pylint: disable=W0718
             logging.error("Error while disabling fuzzy translations in file %s: %s", self.config.filepo_file_path, e)    
-    # disable_fuzzy_translations    
+    # disable_fuzzy_translations
 
-    ###########################################################################
+    # -------------------------------------------------------------------------
 
     def update_po_entry(self, original_text, translated_text, po_file):
         """Updates a .po file entry with the translated text."""
@@ -87,7 +79,7 @@ class GettextCloudTranslator:
             entry.msgstr = translated_text
     # update_po_entry 
 
-    ###########################################################################
+    # -------------------------------------------------------------------------
 
     def apply_translations_to_po_file(self, translated_texts, po_file):
         """
@@ -101,7 +93,7 @@ class GettextCloudTranslator:
                 logging.warning("No original text found for index %s", translation["msgid"])
     # apply_translations_to_po_file
   
-    ###########################################################################
+    # -------------------------------------------------------------------------
 
     def process_translations(self, texts_to_translate):
         """Processes translations either in bulk or one by one."""
@@ -109,12 +101,12 @@ class GettextCloudTranslator:
             return self.service.translate_in_bulk(texts_to_translate)
         else:
             return self.service.translate_one_by_one(texts_to_translate)
-    # process_translations    
+    # process_translations
 
-    ###########################################################################    
+    # -------------------------------------------------------------------------
 
     def translate(self):
-        try:            
+        try:
             po_file = polib.pofile(self.config.file)
             file_lang = po_file.metadata.get('Language', '')
             
@@ -141,7 +133,27 @@ class GettextCloudTranslator:
     # process_po_file
 # GettextCloudTranslator
 
-###############################################################################
+# -----------------------------------------------------------------------------
+
+
+def parse_cli_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--backend", type=str)
+    parser.add_argument("--apikey", type=str)
+    parser.add_argument("--model", type=str)
+    parser.add_argument("--location", type=str)
+    parser.add_argument("--po", type=str)
+    parser.add_argument("--src", type=str)
+    parser.add_argument("--dst", type=str)
+    parser.add_argument("--fuzzy", type=lambda x: x.lower() in ["true", "1", "yes"])
+    parser.add_argument("--bulk", type=lambda x: x.lower() in ["true", "1", "yes"])
+    parser.add_argument("--bulksize", type=int)
+    parser.add_argument("--config", type=str, default="config.yaml", help="Ruta al archivo YAML")
+    args = parser.parse_args()
+    return args
+
+# -----------------------------------------------------------------------------
+
 
 def main():
     """Main function to parse arguments and initiate processing."""
@@ -149,10 +161,12 @@ def main():
     parser.add_argument("--version", action="version", version=f'%(prog)s {__version__}')
     parser.add_argument("--backend", required=True, default="azure", choices=["chatgpt", "azure"])
     parser.add_argument("--apikey", help="Service API key")
-    parser.add_argument("--model", default="gpt-3.5-turbo-1106", help="OpenAI model to use for translations, for the ChatGPT backend.")
+    parser.add_argument("--model", default="gpt-3.5-turbo-1106", help="OpenAI model to use for translations, for the "
+                        "ChatGPT backend.")
     parser.add_argument("--location", help="Microsoft Azure location")
     parser.add_argument("--file", required=True, help="Input .po file")
-    parser.add_argument("--srclang", required=False, choices=["en", "es"], default="en", help="The ISO code for the language of the source strings. Defaults to 'en' (English)")
+    parser.add_argument("--srclang", required=False, choices=["en", "es"], default="en", help="The ISO code for the "
+                        "language of the source strings. Defaults to 'en' (English)")
     parser.add_argument("--dstlang", required=False, help="The ISO code for the language to translate to")
     parser.add_argument("--fuzzy", action="store_true", help="Remove fuzzy entries")
     parser.add_argument("--bulk", action="store_true", help="Use bulk translation mode")
@@ -161,12 +175,31 @@ def main():
     args = parser.parse_args()
     args.apikey = args.apikey if args.apikey else os.getenv("API_KEY")
 
-    translator = GettextCloudTranslator(TranslatorFactory().create_translator(args))
-    translator.translate()
+
 # main
 
 ###############################################################################
 
+
 if __name__ == "__main__":
-    main()
+    cli_args = parse_cli_args()
+
+    class MySettings(Settings):
+        @classmethod
+        def settings_customise_sources(cls, settings_cls, init_settings, env_settings):
+            return (
+                YamlConfigSettingsSource(settings_cls, cli_args.config),
+                env_settings,
+                init_settings,
+            )
+
+    try:
+        settings = MySettings(**{k: v for k, v in vars(cli_args).items() if v is not None})
+        print(settings.model_dump())
+    except ValidationError as e:
+        print(e)
+        sys.exit(1)
+
+    translator = GettextCloudTranslator(TranslatorFactory().create_translator(settings))
+    translator.translate()
 # __main__

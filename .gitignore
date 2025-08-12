@@ -5,3 +5,5 @@ dist/
 __pycache__
 build/
 db.sqlite3
+.vscode/
+.pytest_cache/

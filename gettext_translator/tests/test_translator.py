@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 import polib
 import pytest
 
-from gettext_cloud_translator.cloud_translator import TranslationConfig, TranslationService
+from gettext_translator.cloud_translator import TranslationConfig, TranslationService
 
 
 @pytest.fixture(name='mock_openai_client')

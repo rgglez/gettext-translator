@@ -1,1 +1,1 @@
-recursive-include gettext_cloud_translator *
+recursive-include gettext_translator *

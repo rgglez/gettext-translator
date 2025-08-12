@@ -1,37 +1,40 @@
 """
-Setup script for the gettext-cloud-translator package.
+Setup script for the gettext-translator package.
 This script is used to install the package and its dependencies.
 """
 
 from setuptools import find_packages, setup
 
-from gettext_cloud_translator.version import __version__
+from gettext_translator.version import __version__
 
 # Read the contents of README file
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='gettext-cloud-translator',
+    name='gettext-translator',
     version=__version__,
     author='Rodolfo Gonzalez',
     author_email='rodolfo.gonzalez@gmail.com',
-    description='A CLI tool for translating .po files using cloud services.',
+    description='A CLI tool for translating .po files using cloud services and/or AI.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/rgglez/gettext-cloud-translator',
+    url='https://github.com/rgglez/gettext-translator',
     license='LICENSE',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
         'polib',
         'openai',
-        'python-dotenv'
+        'python-dotenv',
+        'pytest',
+        'rich',
+        'requests',
         # Add other dependencies from requirements.txt
     ],
     entry_points={
         'console_scripts': [
-            'gettext-cloud-translator=gettext_cloud_translator.cloud_translator:main',
+            'gettext-translator=gettext_translator.translator:main',
         ],
     },
     classifiers=[
