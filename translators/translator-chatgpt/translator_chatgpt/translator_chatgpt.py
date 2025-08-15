@@ -1,8 +1,8 @@
 """
 Gettext Translator
 
-This Python script provides a tool for translating gettext .po files 
-using OpenAI's API, Microsoft Azure Translator or local AI models. 
+This Python script provides a tool for translating gettext .po files
+using OpenAI's API, Microsoft Azure Translator or local AI models.
 It is designed to handle both bulk and individual translation modes.
 
 ---
@@ -23,7 +23,6 @@ limitations under the License.
 """
 
 import logging
-
 from translator_service import TranslatorService
 from openai import OpenAI
 
@@ -56,10 +55,6 @@ class TranslatorChatGPT(TranslatorService):
     # validate_openai_connection
 
     # -------------------------------------------------------------------------
-
-    def translate(self, text: str, src: str, dst: str) -> str:
-        pass
-    # translate
 
     # def translate_bulk(self, texts, target_language, po_file_path, current_batch):
     """
@@ -136,7 +131,7 @@ class TranslatorChatGPT(TranslatorService):
 
     # -------------------------------------------------------------------------
 
-    def translate_one_by_one(self, texts_to_translate):
+    def translate(self, texts_to_translate):
         """Translates texts one by one and updates the .po file."""
         translated_texts = []
         for index, text in enumerate(texts_to_translate):
@@ -151,13 +146,13 @@ class TranslatorChatGPT(TranslatorService):
                 })
             else:
                 logging.error("No translation returned for text: %s", text)
-    # translate_one_by_one
+    # translate
 
     # -------------------------------------------------------------------------
 
-    def translate_in_bulk(self, texts):
+    def translate_batch(self, texts):
         """Translates texts in bulk and applies them to the .po file."""
         self.total_batches = (len(texts) - 1) // 50 + 1
     #    translated_texts = self.service.translate_bulk(texts)
-    # translate_in_bulk
+    # translate_batch
 # TranslatorChatGPT

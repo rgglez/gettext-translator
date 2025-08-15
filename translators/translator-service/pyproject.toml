@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "translator-service"
+version = "0.0.1"
+description = "Core library with plugin interface for the translation services for gettext_translator"
+authors = [{ name="Rodolfo González González", email="github@rodolfo.gg" }]
+readme = "README.md"
+license = { text = "Apache 2.0" }
+dependencies = []

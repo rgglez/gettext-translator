@@ -1,8 +1,8 @@
 """
 Gettext Translator
 
-This Python script provides a tool for translating gettext .po files 
-using OpenAI's API, Microsoft Azure Translator or local AI models. 
+This Python script provides a tool for translating gettext .po files
+using OpenAI's API, Microsoft Azure Translator or local AI models.
 It is designed to handle both bulk and individual translation modes.
 
 ---
@@ -34,12 +34,12 @@ class TranslatorService(ABC):
     # __init__
 
     @abstractmethod
-    def translate_in_bulk(self, texts):
+    def translate_batch(self, texts):
         pass
-    # translate_in_bulk
-        
+    # translate_batch
+
     @abstractmethod
-    def translate_one_by_one(self, texts):
+    def translate(self, texts):
         pass
-    # translate_one_by_one
+    # translate
 # TranslatorService

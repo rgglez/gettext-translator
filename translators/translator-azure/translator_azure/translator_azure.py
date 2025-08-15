@@ -1,8 +1,8 @@
 """
 Gettext Translator
 
-This Python script provides a tool for translating gettext .po files 
-using OpenAI's API, Microsoft Azure Translator or local AI models. 
+This Python script provides a tool for translating gettext .po files
+using OpenAI's API, Microsoft Azure Translator or local AI models.
 It is designed to handle both bulk and individual translation modes.
 
 ---
@@ -34,7 +34,7 @@ from rich.pretty import pprint
 
 class TranslatorAzure(TranslatorService):
     def __init__(self, settings) -> None:
-        self.config = settings     
+        self.config = settings
 
         path = '/translate'
         self.constructed_url = 'https://api.cognitive.microsofttranslator.com' + path
@@ -55,7 +55,7 @@ class TranslatorAzure(TranslatorService):
 
     # -------------------------------------------------------------------------
 
-    def translate_one_by_one(self, texts_to_translate):
+    def translate(self, texts_to_translate):
         try:
             translated_texts = []
             for msgid in texts_to_translate:
@@ -66,24 +66,24 @@ class TranslatorAzure(TranslatorService):
 
                 request = requests.post(self.constructed_url, params=self.params, headers=self.headers, json=body)
                 response = request.json()
-                        
+
                 translated_texts.append({
                     "msgid": msgid,
                     "msgstr": response[0]['translations'][0]['text']
                 })
             # for
-                    
+
             return translated_texts
 
         except Exception as e:  # pylint: disable=W0718
             pprint(e)
             traceback.print_stack()
             return []
-    # translate_one_by_one
+    # translate
 
     # -------------------------------------------------------------------------
 
-    def translate_in_bulk(self, texts_to_translate):
+    def translate_batch(self, texts_to_translate):
         try:
             char_count = 0
             total_texts = len(texts_to_translate)
@@ -102,10 +102,6 @@ class TranslatorAzure(TranslatorService):
                 if char_count > 49500 or i + 1 > total_texts or j + 1 > 1000:
                     request = requests.post(self.constructed_url, params=self.params, headers=self.headers, json=body)
                     response = request.json()
-
-                    print("*********************************************************")
-                    pprint(response)
-                    print("*********************************************************")
 
                     for translation, original in zip(response, body):
                         translated_texts.append({
@@ -126,5 +122,5 @@ class TranslatorAzure(TranslatorService):
             pprint(e)
             traceback.print_stack()
             return []
-    # translate_in_bulk
+    # translate_batch
 # TranslatorAzure

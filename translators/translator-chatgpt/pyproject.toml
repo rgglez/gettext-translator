@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "translator-chatgpt"
+version = "0.0.1"
+description = "ChatGPT API implementation for translator-service"
+authors = [{ name="Rodolfo González González", email="github@rodolfo.gg" }]
+readme = "README.md"
+license = { text = "Apache 2" }
+dependencies = ["translator-service>=0.0.1"]
+
+[project.entry-points."translator_service.plugins"]
+chatgpt = "translator_chatgpt:TranslatorChatGPT"
