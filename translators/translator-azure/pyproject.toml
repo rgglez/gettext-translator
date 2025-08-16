@@ -9,7 +9,11 @@ description = "Azure implementation for translator-service"
 authors = [{ name="Rodolfo González González", email="github@rodolfo.gg" }]
 readme = "README.md"
 license = { text = "Apache 2" }
-dependencies = ["translator-service>=0.0.1"]
+dependencies = [
+    "translator-service>=0.0.1",
+    "requests==2.32.4",
+    "rich==14.1.0"
+]
 
 [project.entry-points."translator_service.plugins"]
 azure = "translator_azure:TranslatorAzure"
