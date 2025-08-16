@@ -24,15 +24,13 @@ limitations under the License.
 
 # -------------------------------------------------------------------------
 
-import argparse
 import logging
 import sys
 import polib
 from translator_factory import TranslatorFactory
+from settings import MySettings
 from pydantic import ValidationError
-from pydantic_settings import DotEnvSettingsSource, PydanticBaseSettingsSource
-from version import __version__
-from settings import Settings, YamlConfigSettingsSource
+
 
 # -------------------------------------------------------------------------
 
@@ -47,7 +45,7 @@ class GettextCloudTranslator:
         self.config = service.config
 
         if self.config.fuzzy:
-            self.disable_fuzzy_translations(self.config.file)
+            self.disable_fuzzy_translations()
     # __init__
 
     # -------------------------------------------------------------------------
@@ -57,16 +55,16 @@ class GettextCloudTranslator:
         Disables fuzzy translations in a .po file by removing the 'fuzzy' flags from entries.
         """
         try:
-            po_file = polib.pofile(self.config.file)
+            po_file = polib.pofile(self.config.po)
 
             fuzzy_entries = [entry for entry in po_file if 'fuzzy' in entry.flags]
             for entry in fuzzy_entries:
                 entry.flags.remove('fuzzy')
 
-            self.po_file.save(self.config.file)
-            logging.info("Fuzzy translations disabled in file: %s", self.config.file)
+            po_file.save(self.config.po)
+            logging.info("Fuzzy translations disabled in file: %s", self.config.po)
         except Exception as e:  # pylint: disable=W0718
-            logging.error("Error while disabling fuzzy translations in file %s: %s", self.config.filepo_file_path, e)
+            logging.error("Error while disabling fuzzy translations in file %s: %s", self.config.po, e)
     # disable_fuzzy_translations
 
     # -------------------------------------------------------------------------
@@ -98,20 +96,20 @@ class GettextCloudTranslator:
     def process_translations(self, texts_to_translate):
         """Processes translations either in bulk or one by one."""
         if self.config.bulk:
-            return self.service.translate_in_bulk(texts_to_translate)
+            return self.service.translate_batch(texts_to_translate)
         else:
-            return self.service.translate_one_by_one(texts_to_translate)
+            return self.service.translate(texts_to_translate)
     # process_translations
 
     # -------------------------------------------------------------------------
 
     def translate(self):
         try:
-            po_file = polib.pofile(self.config.file)
+            po_file = polib.pofile(self.config.po)
             file_lang = po_file.metadata.get('Language', '')
 
-            if file_lang[:2] != self.config.dstlang:
-                logging.warning("Skipping .po file due to inferred language mismatch: %s", self.config.file)
+            if file_lang[:2] != self.config.dst:
+                logging.warning("Skipping .po file due to inferred language mismatch: %s", self.config.po)
                 return
 
             texts_to_translate = [
@@ -122,65 +120,24 @@ class GettextCloudTranslator:
 
             translated_texts = self.process_translations(texts_to_translate)
 
-            logging.info("Applying %i translations to %s", len(translated_texts), self.config.file)
+            logging.info("Applying %i translations to %s", len(translated_texts), self.config.po)
             self.apply_translations_to_po_file(translated_texts, po_file)
 
             po_file.save()
 
-            logging.info("Finished processing .po file: %s", self.config.file)
+            logging.info("Finished processing .po file: %s", self.config.po)
         except Exception as e:  # pylint: disable=W0718
-            logging.error("Error processing file %s: %s", self.config.file, e)
+            logging.error("Error processing file %s: %s", self.config.po, e)
     # process_po_file
 # GettextCloudTranslator
 
 # -----------------------------------------------------------------------------
 
 
-def parse_cli_args():
-    parser = argparse.ArgumentParser(description="Translate .po files")
-    parser.add_argument("--version", action="version", version=f'%(prog)s {__version__}')
-    parser.add_argument("--backend", type=str, required=True, default="azure", choices=["chatgpt", "azure"])
-    parser.add_argument("--apikey", type=str, help="Service API key")
-    parser.add_argument("--model", type=str, default="gpt-3.5-turbo-1106", help="OpenAI model to use for translations, "
-                        "for the ChatGPT backend.")
-    parser.add_argument("--location", type=str, help="Microsoft Azure location")
-    parser.add_argument("--po", type=str, required=True, help="Input .po file")
-    parser.add_argument("--src", type=str, required=False, choices=["en", "es"], default="en", help="The ISO code for "
-                        "the language of the source strings. Defaults to 'en' (English)")
-    parser.add_argument("--dst", type=str, required=False, help="The ISO code for the language to translate to")
-    parser.add_argument("--fuzzy", type=lambda x: x.lower() in ["true", "1", "yes"], help="Remove fuzzy entries")
-    parser.add_argument("--bulk", type=lambda x: x.lower() in ["true", "1", "yes"], help="Use bulk translation mode")
-    parser.add_argument("--bulksize", type=int, help="Batch size for bulk translation")
-    parser.add_argument("--config", type=str, default="config.yaml", help="Path to the configuration file")
-    args = parser.parse_args()
-    return args
-
-# -----------------------------------------------------------------------------
-
-
 if __name__ == "__main__":
-    cli_args = parse_cli_args()
-
-    class MySettings(Settings):
-        @classmethod
-        def settings_customise_sources(
-            cls,
-            settings_cls,
-            init_settings: PydanticBaseSettingsSource,
-            env_settings: PydanticBaseSettingsSource,
-            file_secret_settings: PydanticBaseSettingsSource,
-        ):
-            dotenv_source = DotEnvSettingsSource(settings_cls, env_file=".env", env_file_encoding="utf-8")
-            return (
-                YamlConfigSettingsSource(settings_cls, cli_args.config),  # 1 YAML
-                dotenv_source,                                            # 2 .env
-                env_settings,                                             # 3 Enviroment variables
-                init_settings,                                            # 4 CLI args
-            )
-
     try:
+        cli_args = MySettings.parse_cli_args()
         settings = MySettings(**{k: v for k, v in vars(cli_args).items() if v is not None})
-        print(settings.model_dump())
     except ValidationError as e:
         print(e)
         sys.exit(1)

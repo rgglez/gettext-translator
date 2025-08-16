@@ -5,7 +5,7 @@ This script is used to install the package and its dependencies.
 
 from setuptools import find_packages, setup
 
-from gettext_translator.version import __version__
+from gettext_translator.src.version import __version__
 
 # Read the contents of README file
 with open('README.md', encoding='utf-8') as f:

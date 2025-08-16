@@ -40,8 +40,8 @@ class TranslatorAzure(TranslatorService):
         self.constructed_url = 'https://api.cognitive.microsofttranslator.com' + path
         self.params = {
             'api-version': '3.0',
-            'from': self.config.srclang,
-            'to': self.config.dstlang,
+            'from': self.config.src,
+            'to': self.config.dst,
             'textType': 'html'
         }
         self.headers = {

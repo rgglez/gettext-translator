@@ -11,3 +11,4 @@ SentencePiece
 Flax
 sacremoses
 pydantic_settings
+pydantic

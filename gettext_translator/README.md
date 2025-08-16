@@ -5,10 +5,6 @@
 ![GitHub issues](https://img.shields.io/github/issues/rgglez/gettext-translator)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/rgglez/gettext-translator)
 
-## IMPORTANT
-
-This README is work in progress. More detailed information will come soon.
-
 ## Gettext Cloud Translator
 
 This program allows to translate .po files, as used by [gettext](https://www.gnu.org/software/gettext/) using different cloud services.  Currently it works with Microsoft Azure Translator, but the plan is to rewrite the functionality of the ChatGPT backend.

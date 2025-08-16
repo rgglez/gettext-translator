@@ -137,7 +137,7 @@ class TranslatorChatGPT(TranslatorService):
         for index, text in enumerate(texts_to_translate):
             logging.info("Translating text %s/%s", (index + 1), len(texts_to_translate))
             translation_request = f"Translate the following text from \
-                                    {self.config.srclang} into {self.config.dstlang}: {text}"
+                                    {self.config.src} into {self.config.dst}: {text}"
             result = self.service.perform_translation(translation_request)
             if result:
                 translated_texts.append({

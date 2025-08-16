@@ -22,7 +22,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from translate_servive import load_plugins
+from translator_service import load_plugins
 
 
 class TranslatorFactory:
@@ -33,7 +33,7 @@ class TranslatorFactory:
             pass
         elif settings.backend == "azure":
             impl_cls = plugins["azure"]
-            return impl_cls()
+            return impl_cls(settings)
         else:
             raise ValueError("Unknown translation backend")
 # TranslatorFactory
