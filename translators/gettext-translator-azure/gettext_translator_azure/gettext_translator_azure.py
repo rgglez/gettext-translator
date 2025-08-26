@@ -18,7 +18,7 @@ import traceback
 import requests
 import uuid
 
-from translator_service import TranslatorService
+from gettext_translator_service import TranslatorService
 from rich.pretty import pprint
 
 # -----------------------------------------------------------------------------
@@ -76,43 +76,7 @@ class TranslatorAzure(TranslatorService):
     # -------------------------------------------------------------------------
 
     def translate_batch(self, texts_to_translate):
-        try:
-            char_count = 0
-            total_texts = len(texts_to_translate)
-            translated_texts = []
-            body = []
-            i = 0
-            j = 0
-
-            for msgid in texts_to_translate:
-                i = i + 1
-                j = j + 1
-                body.append({
-                    'text': msgid
-                })
-                char_count = char_count + len(msgid)
-                if char_count > 49500 or i + 1 > total_texts or j + 1 > 1000:
-                    request = requests.post(self.constructed_url, params=self.params, headers=self.headers, json=body)
-                    response = request.json()
-
-                    for translation, original in zip(response, body):
-                        translated_texts.append({
-                            "msgid": original['text'],
-                            "msgstr": translation['translations'][0]['text']
-                        })
-                    # for
-
-                    body = []
-                    char_count = 0
-                    j = 0
-                # if
-            # for
-
-            return translated_texts
-
-        except Exception as e:  # pylint: disable=W0718
-            pprint(e)
-            traceback.print_stack()
-            return []
+        print("Bulk mode not supported by the Azure plugin")
+        pass
     # translate_batch
 # TranslatorAzure

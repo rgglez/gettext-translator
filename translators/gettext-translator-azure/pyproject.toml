@@ -3,17 +3,17 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "translator-azure"
+name = "gettext-translator-azure"
 version = "0.0.1"
 description = "Azure implementation for translator-service"
 authors = [{ name="Rodolfo González González", email="github@rodolfo.gg" }]
 readme = "README.md"
 license = { text = "Apache 2.0" }
 dependencies = [
-    "translator-service>=0.0.1",
+    "gettext-translator-service>=0.0.1",
     "requests==2.32.4",
     "rich==14.1.0"
 ]
 
-[project.entry-points."translator_service.plugins"]
-azure = "translator_azure:TranslatorAzure"
+[project.entry-points."gettext_translator_service.plugins"]
+azure = "gettext_translator_azure:TranslatorAzure"

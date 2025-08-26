@@ -16,7 +16,7 @@ limitations under the License.
 
 
 import logging
-from translator_service import TranslatorService
+from gettext_translator_service import TranslatorService
 from openai import OpenAI
 
 # -----------------------------------------------------------------------------

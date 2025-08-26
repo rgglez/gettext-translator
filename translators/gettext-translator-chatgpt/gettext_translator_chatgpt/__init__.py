@@ -14,12 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import importlib.metadata
+from .gettext_translator_chatgpt import TranslatorChatGPT
 
-
-def load_plugins():
-    """Auto-discover installed plugins."""
-    return {
-        ep.name: ep.load()
-        for ep in importlib.metadata.entry_points(group="translator_service.plugins")
-    }
+__all__ = ["TranslatorChatGPT"]

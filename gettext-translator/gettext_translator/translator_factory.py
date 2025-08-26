@@ -14,13 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from translator_service import load_plugins
+from gettext_translator_service import load_plugins
+from rich.pretty import pprint
 
 
 class TranslatorFactory:
     @staticmethod
     def create_translator(settings):
         plugins = load_plugins()
+        print("Plugs:")
+        pprint(plugins)
         if settings.backend == "chatgpt":
             pass
         elif settings.backend == "azure":

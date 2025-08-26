@@ -14,7 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import importlib.metadata
 
-from .translator_azure import TranslatorAzure
 
-__all__ = ["TranslatorAzure"]
+def load_plugins():
+    """Auto-discover installed plugins."""
+    return {
+        ep.name: ep.load()
+        for ep in importlib.metadata.entry_points(group="gettext_translator_service.plugins")
+    }
+# load_plugins

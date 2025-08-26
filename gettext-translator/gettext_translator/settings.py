@@ -18,7 +18,7 @@ limitations under the License.
 
 
 import argparse
-from enum import Enum
+import re
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import (
     PydanticBaseSettingsSource,
@@ -27,15 +27,6 @@ from pydantic_settings.sources import (
 from pydantic import Field, field_validator
 import yaml
 from typing import Any, Dict, Tuple
-
-# -------------------------------------------------------------------------
-
-
-class BackendEnum(str, Enum):
-    azure = "azure"
-    chatgpt = "chatgpt"
-    marianmt = "marianmt"
-# BackendEnum
 
 # -------------------------------------------------------------------------
 
@@ -75,7 +66,7 @@ class MySettings(BaseSettings):
         env_file=".env"
     )
 
-    backend: BackendEnum
+    backend: str
     apikey: str = Field(default="")
     model: str = Field(default="")
     location: str = Field(default="")
@@ -83,16 +74,19 @@ class MySettings(BaseSettings):
     src: str
     dst: str
     fuzzy: bool = Field(default=True)
-    bulk: bool = Field(default=True)
+    bulk: bool = Field(default=False)
     bulksize: int = Field(default=49500)
     config: str = Field(default="")
 
     @field_validator("src", "dst")
     @classmethod
     def validate_iso639(cls, v):
-        if not (len(v) == 2 and v.isalpha()):
-            raise ValueError(f"Invalid ISO 639 code: {v}")
+        # Basic pattern matching
+        if not re.match(r'^[a-z]{2}(_[A-Z]{2})?$', v):
+            return False
+
         return v.lower()
+    # validate_iso639
 
     @field_validator("apikey")
     @classmethod
@@ -101,6 +95,7 @@ class MySettings(BaseSettings):
         if backend in {"azure", "chatgpt"} and not v:
             raise ValueError(f"apikey is required for backend={backend}")
         return v
+    # validate_apikey
 
     @field_validator("model")
     @classmethod
@@ -108,6 +103,7 @@ class MySettings(BaseSettings):
         if info.data.get("backend") == "chatgpt" and not v:
             raise ValueError("model is required for backend=chatgpt")
         return v
+    # validate_model
 
     @field_validator("location")
     @classmethod
@@ -115,6 +111,7 @@ class MySettings(BaseSettings):
         if info.data.get("backend") == "azure" and not v:
             raise ValueError("location is required for backend=azure")
         return v
+    # validate_location
 
     @classmethod
     def parse_cli_args(cls):
@@ -155,4 +152,5 @@ class MySettings(BaseSettings):
             env_source,      # 3 Environment variables
             init_settings,   # 4 CLI args
         )
+    # settings_customise_sources
 # MySettings

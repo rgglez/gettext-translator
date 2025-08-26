@@ -3,16 +3,16 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "translator-chatgpt"
+name = "gettext-translator-chatgpt"
 version = "0.0.1"
 description = "ChatGPT API implementation for translator-service"
 authors = [{ name="Rodolfo González González", email="github@rodolfo.gg" }]
 readme = "README.md"
 license = { text = "Apache 2.0" }
 dependencies = [
-    "translator-service>=0.0.1",
+    "gettext-translator-service>=0.0.1",
     "openai==1.99.9"
 ]
 
-[project.entry-points."translator_service.plugins"]
-chatgpt = "translator_chatgpt:TranslatorChatGPT"
+[project.entry-points."gettext_translator_service.plugins"]
+chatgpt = "gettext_translator_chatgpt:TranslatorChatGPT"
