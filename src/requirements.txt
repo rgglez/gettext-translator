@@ -4,3 +4,4 @@ pydantic_settings==2.10.1
 pytest==8.4.1
 PyYAML==6.0.2
 translator_service==0.0.1
+langcodes

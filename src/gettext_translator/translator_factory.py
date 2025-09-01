@@ -15,19 +15,14 @@ limitations under the License.
 """
 
 from gettext_translator_service import load_plugins
-from rich.pretty import pprint
 
 
 class TranslatorFactory:
     @staticmethod
     def create_translator(settings):
         plugins = load_plugins()
-        print("Plugs:")
-        pprint(plugins)
-        if settings.backend == "chatgpt":
-            pass
-        elif settings.backend == "azure":
-            impl_cls = plugins["azure"]
+        if settings.backend in plugins:
+            impl_cls = plugins[settings.backend]
             return impl_cls(settings)
         else:
             raise ValueError("Unknown translation backend")

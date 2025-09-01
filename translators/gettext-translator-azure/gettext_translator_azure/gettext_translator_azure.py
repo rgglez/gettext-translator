@@ -18,7 +18,7 @@ import traceback
 import requests
 import uuid
 
-from gettext_translator_service import TranslatorService
+from gettext_translator_service import TranslatorService, Capabilities
 from rich.pretty import pprint
 
 # -----------------------------------------------------------------------------
@@ -28,22 +28,36 @@ class TranslatorAzure(TranslatorService):
     def __init__(self, settings) -> None:
         self.config = settings
 
+        if settings.info:
+            return
+
         path = '/translate'
         self.constructed_url = 'https://api.cognitive.microsofttranslator.com' + path
         self.params = {
             'api-version': '3.0',
-            'from': self.config.src,
-            'to': self.config.dst,
+            'from': self.config.src.language,
+            'to': self.config.dst.language,
             'textType': 'html'
         }
         self.headers = {
-            'Ocp-Apim-Subscription-Key': self.config.apikey,
+            'Ocp-Apim-Subscription-Key': self.config.plugin_options["apikey"],
             # location required if you're using a multi-service or regional (not global) resource.
-            'Ocp-Apim-Subscription-Region': self.config.location,
+            'Ocp-Apim-Subscription-Region': self.config.plugin_options["location"],
             'Content-type': 'application/json',
             'X-ClientTraceId': str(uuid.uuid4())
         }
     # __init__
+
+    # -------------------------------------------------------------------------
+
+    def get_capabilities(self) -> Capabilities:
+        return Capabilities(
+            description="Translator backend using Azure Translation Services",
+            supports_single=True,
+            supports_batch=False,
+            is_cloud=True
+        )
+    # get_capabilities
 
     # -------------------------------------------------------------------------
 

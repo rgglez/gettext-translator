@@ -19,11 +19,39 @@ from abc import ABC, abstractmethod
 # -----------------------------------------------------------------------------
 
 
+class Capabilities:
+    def __init__(self, description: str, supports_single: bool, supports_batch: bool, is_cloud: bool):
+        self.description = description
+        self.supports_single = supports_single
+        self.supports_batch = supports_batch
+        self.is_cloud = is_cloud
+    # __init__
+
+    def to_dict(self) -> dict:
+        """Convert the capabilities to a dictionary."""
+        return {
+            "description": self.description,
+            "supports_single": self.supports_single,
+            "supports_batch": self.supports_batch,
+            "is_cloud": self.is_cloud
+        }
+    # to_dict
+# Capabilities
+
+# -----------------------------------------------------------------------------
+
+
 class TranslatorService(ABC):
     @abstractmethod
     def __init__(self) -> None:
         pass
     # __init__
+
+    @abstractmethod
+    def get_capabilities(self) -> Capabilities:
+        """Return an instance of Capabilities for the plugin."""
+        pass
+    # get_capabilities
 
     @abstractmethod
     def translate_batch(self, texts):

@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 
-from .base import TranslatorService
+from .base import TranslatorService, Capabilities
 from .utils import load_plugins
 
-__all__ = ["TranslatorService", "load_plugins"]
+__all__ = ["TranslatorService", "Capabilities", "load_plugins"]

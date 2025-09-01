@@ -28,9 +28,9 @@ import logging
 import sys
 import polib
 from translator_factory import TranslatorFactory
-from settings import MySettings
+from settings import Settings
 from pydantic import ValidationError
-
+from rich.pretty import pprint
 
 # -------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ class GettextCloudTranslator:
         self.service = service
         self.config = service.config
 
-        if self.config.fuzzy:
+        if not self.config.info and self.config.fuzzy:
             self.disable_fuzzy_translations()
     # __init__
 
@@ -108,7 +108,7 @@ class GettextCloudTranslator:
             po_file = polib.pofile(self.config.po)
             file_lang = po_file.metadata.get('Language', '')
 
-            if file_lang[:2] != self.config.dst:
+            if file_lang[:2] != self.config.dst.language:
                 logging.warning("Skipping .po file due to inferred language mismatch: %s", self.config.po)
                 return
 
@@ -129,6 +129,16 @@ class GettextCloudTranslator:
         except Exception as e:  # pylint: disable=W0718
             logging.error("Error processing file %s: %s", self.config.po, e)
     # process_po_file
+
+    # -------------------------------------------------------------------------
+
+    def capabilities(self):
+        pprint(self.service.get_capabilities().to_dict())
+    # capabilities
+
+    # -------------------------------------------------------------------------
+
+
 # GettextCloudTranslator
 
 # -----------------------------------------------------------------------------
@@ -136,11 +146,22 @@ class GettextCloudTranslator:
 
 if __name__ == "__main__":
     try:
-        cli_args = MySettings.parse_cli_args()
-        settings = MySettings(**{k: v for k, v in vars(cli_args).items() if v is not None})
+        cli_args = Settings.parse_cli_args()
+        settings = Settings(**{k: v for k, v in vars(cli_args).items() if v is not None})
     except ValidationError as e:
         print(e)
         sys.exit(1)
+
+    if cli_args.info:
+        translator = GettextCloudTranslator(TranslatorFactory().create_translator(settings))
+        translator.capabilities()
+        sys.exit(0)
+
+    if cli_args.plugins:
+        from gettext_translator_service import load_plugins
+        plugins = load_plugins()
+        pprint(plugins)
+        sys.exit(0)
 
     translator = GettextCloudTranslator(TranslatorFactory().create_translator(settings))
     translator.translate()
