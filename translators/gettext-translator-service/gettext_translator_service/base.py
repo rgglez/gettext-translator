@@ -19,47 +19,23 @@ from abc import ABC, abstractmethod
 # -----------------------------------------------------------------------------
 
 
-class Capabilities:
-    def __init__(self, description: str, supports_single: bool, supports_batch: bool, is_cloud: bool):
-        self.description = description
-        self.supports_single = supports_single
-        self.supports_batch = supports_batch
-        self.is_cloud = is_cloud
-    # __init__
-
-    def to_dict(self) -> dict:
-        """Convert the capabilities to a dictionary."""
-        return {
-            "description": self.description,
-            "supports_single": self.supports_single,
-            "supports_batch": self.supports_batch,
-            "is_cloud": self.is_cloud
-        }
-    # to_dict
-# Capabilities
-
-# -----------------------------------------------------------------------------
-
-
 class TranslatorService(ABC):
+    REQUIRES_CONFIG: list[str]
+
     @abstractmethod
     def __init__(self) -> None:
         pass
     # __init__
 
     @abstractmethod
-    def get_capabilities(self) -> Capabilities:
-        """Return an instance of Capabilities for the plugin."""
-        pass
-    # get_capabilities
-
-    @abstractmethod
-    def translate_batch(self, texts):
-        pass
-    # translate_batch
-
-    @abstractmethod
     def translate(self, texts):
+        '''Translates one or more strings, depending on the backend'''
         pass
     # translate
+
+    @abstractmethod
+    def get_required_configuration(self):
+        '''Returns the required configuration options (defined as __annotations__) of the plugin'''
+        pass
+    # get_required_configuration
 # TranslatorService

@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 
+import json
 import logging
 from gettext_translator_service import TranslatorService
 from openai import OpenAI
@@ -23,129 +24,129 @@ from openai import OpenAI
 
 
 class TranslatorChatGPT(TranslatorService):
+    # Configuration options required
+    REQUIRES: list[str] = ["apikey", "model"]
+
+    # -------------------------------------------------------------------------
+
     def __init__(self, settings) -> None:
         self.config = settings
-        self.client = OpenAI(api_key=self.config.apikey)
+    # __init__
+
+    # -------------------------------------------------------------------------
+
+    def configure(self):
+        self.client = OpenAI(api_key=self.config.plugin_options["apikey"])
 
         # Validate the OpenAI connection
         if not self.validate_openai_connection():
-            logging.error("OpenAI connection failed. Please check your API key and network connection.")
+            logging.error("[☠️] OpenAI connection failed. Please check your API key and network connection.")
             exit()
-    # __init__
+    # configure
 
     # -------------------------------------------------------------------------
 
     def validate_openai_connection(self):
         """Validates the OpenAI connection by making a test API call."""
         try:
-            test_message = {"role": "system", "content": "Test message to validate connection."}
-            self.client.chat.completions.create(model=self.config.model, messages=[test_message])
-            logging.info("OpenAI connection validated successfully.")
+            test_message = {"role": "system", "content": "Test message."}
+            self.client.chat.completions.create(model=self.config.plugin_options["model"], messages=[test_message])
+            logging.info("[✔️] OpenAI connection validated successfully.")
             return True
         except Exception as e:  # pylint: disable=W0718
-            logging.error("Failed to validate OpenAI connection: %s", e)
+            logging.error("[☠️] Failed to validate OpenAI connection: %s", e)
             return False
     # validate_openai_connection
 
     # -------------------------------------------------------------------------
 
-    # def translate_bulk(self, texts, target_language, po_file_path, current_batch):
-    """
-    def translate_bulk(self, text) -> str:
-        return
-        # Translates a list of texts in bulk and handles retries.
-        translated_texts = []
-        for i, _ in enumerate(range(0, len(texts), self.config.batch_size), start=current_batch):
-            batch_texts = texts[i:i + self.config.batch_size]
-            batch_info = f"File: {po_file_path}, Batch {i}/{self.config.total_batches}"
-            batch_info += f" (texts {i + 1}-{min(i + self.config.batch_size, len(texts))})"
-            translation_request = (f"Translate the following texts from {self.config.source_language} "
-                                "into {target_language}. "
-                                "Use the format 'Index: Text' for each segment:\n\n")
-            for index, text in enumerate(batch_texts, start=i * self.batch_size):
-                translation_request += f"{index}: {text}\n"
-
-            retries = 3
-
-            while retries:
-                try:
-                    if self.config.bulk:
-                        logging.info("Translating %s", batch_info)
-                    self.perform_translation(translation_request, translated_texts, batch=True)
-                    break
-                except Exception as e:  # pylint: disable=W0718
-                    error_message = f"Error in translating {batch_info}: {e}. Retrying... {retries - 1} attempts left."
-                    logging.error(error_message)
-                    if retries <= 1:
-                        logging.error("Maximum retries reached for %s. Skipping this batch.", batch_info)
-                        translated_texts.extend([''] * len(batch_texts))
-                    retries -= 1
-                    time.sleep(1)
-
-        logging.debug("Translated texts: %s", translated_texts)
-        return translated_texts
-    """
-    # translate_bulk
-
-    # -------------------------------------------------------------------------
-
-    def perform_translation(self, translation_request, translated_texts, batch=False):
+    def perform_translation(self, translation_request):
         """Takes a translation request and appends the translated texts to the translated_texts list."""
-        translated_texts = []
-
         message = {"role": "user", "content": translation_request}
-        logging.debug("Translation request: %s", translation_request)
-        completion = self.client.chat.completions.create(model=self.config.model, messages=[message])
+        logging.debug("[ℹ️] Translation request: %s", translation_request)
+        completion = self.client.chat.completions.create(model=self.config.plugin_options["model"], messages=[message])
 
-        raw_response = completion.choices[0].message.content.strip()
-        logging.info("Raw API response: %s", raw_response)
+        response = completion.choices[0].message.content.strip()
 
-        if batch:
-            for line in raw_response.split("\n"):
-                try:
-                    index_str, translation = line.split(": ", 1)
-                    index = int(index_str.strip())
-                    translation = translation.strip()
-                    if translation and not translation.startswith("The provided text does not seem to be"):
-                        translated_texts.append((index, translation))
-                    else:
-                        logging.error("No valid translation found for index %s", index)
-                        translated_texts.append((index, ''))
-                except ValueError:  # pylint: disable=W0718
-                    logging.error("Error parsing line: '%s'", line)
-                    translated_texts.append((index, ''))
-        else:
-            if not raw_response.startswith("The provided text does not seem to be"):
-                translated_texts.append((0, raw_response))
-            else:
-                logging.error("No valid translation found for text")
-                translated_texts.append((0, ''))
+        logging.info("[ℹ️] Raw API response: %s", response)
+
+        try:
+            result = json.loads(response)
+        except Exception as e:
+            logging.error("[☠️] Failed to translate batch: %s", e)
+            return []
+
+        return result
     # perform_translation
 
     # -------------------------------------------------------------------------
 
     def translate(self, texts_to_translate):
-        """Translates texts one by one and updates the .po file."""
+        self.configure()
+
+        batch_size = 100
         translated_texts = []
-        for index, text in enumerate(texts_to_translate):
-            logging.info("Translating text %s/%s", (index + 1), len(texts_to_translate))
-            translation_request = f"Translate the following text from \
-                                    {self.config.src} into {self.config.dst}: {text}"
-            result = self.service.perform_translation(translation_request)
-            if result:
-                translated_texts.append({
-                    "msgid": text,
-                    "msgstr": result[0][1]
-                })
-            else:
-                logging.error("No translation returned for text: %s", text)
+
+        source_language = self.config.src.display_name("en")
+        destination_language = self.config.dst.display_name("en")
+
+        translation_prompt = """
+Translate the following strings from {} to {}. The strings are given
+in the form of a JSON array:
+
+[{{"id":"Original string","ctx":"The context of the string"}}]
+
+where "ctx" is optional and denotes the context in which the string is used.
+
+Answer with an array of JSON in this form:
+
+[{{"msgid":"Original string", "msgstr":"Translated string", "msgctxt":"The context of the string"}}]
+
+Answer just with the translation results, do not add any other text. If an error occurs
+or a translation does not exist for a given id, use an empty string for "msgstr".
+
+The texts to translate follow:
+
+
+""".format(source_language, destination_language)
+
+        # Form the rest of the prompt:
+        for i in range(0, len(texts_to_translate), batch_size):
+            body = []
+
+            # Process current batch
+            batch = texts_to_translate[i:i + batch_size]
+
+            for text_entry in batch:
+                if "ctx" in text_entry:
+                    body.append({
+                        'id': text_entry["id"],
+                        'ctx': text_entry["ctx"]
+                    })
+                else:
+                    body.append({
+                        'id': text_entry["id"]
+                    })
+            # for
+
+            # Translate batch
+            json_to_translate = json.dumps(body)
+            results = self.perform_translation(translation_prompt + json_to_translate)
+            for entry in results:
+                translated_texts.append(entry)
+        # for
+
+        return translated_texts
     # translate
 
     # -------------------------------------------------------------------------
 
-    def translate_batch(self, texts):
-        """Translates texts in bulk and applies them to the .po file."""
-        self.total_batches = (len(texts) - 1) // 50 + 1
-    #    translated_texts = self.service.translate_bulk(texts)
-    # translate_batch
+    def get_required_configuration(self):
+        meta = {}
+        for name, typ in self.__annotations__.items():
+            value = getattr(self, name, None)
+            meta[name] = value
+
+        return meta
+    # get_required_configuration
 # TranslatorChatGPT

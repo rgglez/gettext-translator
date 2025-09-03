@@ -24,13 +24,13 @@ limitations under the License.
 
 # -------------------------------------------------------------------------
 
+import json
 import logging
 import sys
 import polib
 from translator_factory import TranslatorFactory
 from settings import Settings
 from pydantic import ValidationError
-from rich.pretty import pprint
 
 # -------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ logging.basicConfig(level=logging.INFO)
 # -------------------------------------------------------------------------
 
 
-class GettextCloudTranslator:
+class GettextTranslator:
     def __init__(self, service) -> None:
         self.service = service
         self.config = service.config
@@ -62,9 +62,9 @@ class GettextCloudTranslator:
                 entry.flags.remove('fuzzy')
 
             po_file.save(self.config.po)
-            logging.info("Fuzzy translations disabled in file: %s", self.config.po)
+            logging.info("[✔️] Fuzzy translations disabled in file: %s", self.config.po)
         except Exception as e:  # pylint: disable=W0718
-            logging.error("Error while disabling fuzzy translations in file %s: %s", self.config.po, e)
+            logging.error("[💣] Error while disabling fuzzy translations in file %s: %s", self.config.po, e)
     # disable_fuzzy_translations
 
     # -------------------------------------------------------------------------
@@ -73,7 +73,7 @@ class GettextCloudTranslator:
         """Updates a .po file entry with the translated text."""
         entry = po_file.find(original_text)
         if entry:
-            logging.info("Applying to %s", entry.msgid)
+            logging.info("[⚙️] Applying to %s", entry.msgid)
             entry.msgstr = translated_text
     # update_po_entry
 
@@ -88,58 +88,53 @@ class GettextCloudTranslator:
             if translation["msgstr"]:
                 self.update_po_entry(translation["msgid"], translation["msgstr"], po_file)
             else:
-                logging.warning("No original text found for index %s", translation["msgid"])
+                logging.warning("[❌] No original text found for index %s", translation["msgid"])
     # apply_translations_to_po_file
 
     # -------------------------------------------------------------------------
 
-    def process_translations(self, texts_to_translate):
-        """Processes translations either in bulk or one by one."""
-        if self.config.bulk:
-            return self.service.translate_batch(texts_to_translate)
-        else:
-            return self.service.translate(texts_to_translate)
-    # process_translations
-
-    # -------------------------------------------------------------------------
-
     def translate(self):
+        """
+        Translates the PO file
+        """
         try:
             po_file = polib.pofile(self.config.po)
             file_lang = po_file.metadata.get('Language', '')
 
             if file_lang[:2] != self.config.dst.language:
-                logging.warning("Skipping .po file due to inferred language mismatch: %s", self.config.po)
+                logging.warning("[💣] Skipping .po file due to inferred language mismatch: %s", self.config.po)
                 return
 
             texts_to_translate = [
-                entry.msgid
+                {"id": entry.msgid, "ctx": entry.msgctxt} if hasattr(entry, 'msgctxt') and entry.msgctxt else {"id": entry.msgid}
                 for entry in po_file
                 if not entry.msgstr and entry.msgid and 'fuzzy' not in entry.flags
             ]
 
-            translated_texts = self.process_translations(texts_to_translate)
+            translated_texts = self.service.translate(texts_to_translate)
 
-            logging.info("Applying %i translations to %s", len(translated_texts), self.config.po)
+            logging.info("[⚙️] Applying %i translations to %s", len(translated_texts), self.config.po)
+
             self.apply_translations_to_po_file(translated_texts, po_file)
 
             po_file.save()
 
-            logging.info("Finished processing .po file: %s", self.config.po)
+            logging.info("[✅] Finished processing .po file: %s", self.config.po)
         except Exception as e:  # pylint: disable=W0718
-            logging.error("Error processing file %s: %s", self.config.po, e)
+            logging.error("[☠️] Error processing file %s: %s", self.config.po, e)
     # process_po_file
 
     # -------------------------------------------------------------------------
 
-    def capabilities(self):
-        pprint(self.service.get_capabilities().to_dict())
-    # capabilities
-
-    # -------------------------------------------------------------------------
-
-
-# GettextCloudTranslator
+    def get_required_configuration(self):
+        """
+        Shows the required configuration options to be passed
+        in --plugin_options as a JSON.
+        """
+        caps = self.service.get_required_configuration()
+        print(json.dumps(caps, indent=2))
+    # get_capabilities
+# GettextTranslator
 
 # -----------------------------------------------------------------------------
 
@@ -152,17 +147,14 @@ if __name__ == "__main__":
         print(e)
         sys.exit(1)
 
+    # Load the translation backend
+    translator = GettextTranslator(TranslatorFactory().create_translator(settings))
+
+    # Just show the info for the given --backend and exit
     if cli_args.info:
-        translator = GettextCloudTranslator(TranslatorFactory().create_translator(settings))
-        translator.capabilities()
+        translator.get_required_configuration()
         sys.exit(0)
 
-    if cli_args.plugins:
-        from gettext_translator_service import load_plugins
-        plugins = load_plugins()
-        pprint(plugins)
-        sys.exit(0)
-
-    translator = GettextCloudTranslator(TranslatorFactory().create_translator(settings))
+    # Translate!
     translator.translate()
 # __main__

@@ -76,7 +76,6 @@ class Settings(BaseSettings):
     src: str = Field(default=Language.make(language='en').language)
     dst: str = Field(default=Language.make(language='en').language)
     fuzzy: bool = Field(default=True)
-    bulk: bool = Field(default=False)
     config: str = Field(default="")
 
     # -------------------------------------------------------------------------
@@ -137,7 +136,6 @@ class Settings(BaseSettings):
         parser.add_argument("--src", type=str, default=Language.make(language='en').language, help="The source language")
         parser.add_argument("--dst", type=str, help="The language to translate to")
         parser.add_argument("--fuzzy", type=lambda x: x.lower() in ["true", "1", "yes"], help="Fuzzy translations?")
-        parser.add_argument("--bulk", type=lambda x: x.lower() in ["true", "1", "yes"], help="Do bulk translation?")
         parser.add_argument("--config", type=str, default="config.yaml", help="Path to the .yaml config file (optional, takes presedence)")
         args = parser.parse_args()
         return args

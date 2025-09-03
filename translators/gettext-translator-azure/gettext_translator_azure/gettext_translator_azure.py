@@ -17,22 +17,28 @@ limitations under the License.
 import traceback
 import requests
 import uuid
+import logging
 
-from gettext_translator_service import TranslatorService, Capabilities
+from gettext_translator_service import TranslatorService
 from rich.pretty import pprint
 
 # -----------------------------------------------------------------------------
 
 
 class TranslatorAzure(TranslatorService):
+    # Configuration options required
+    REQUIRES_CONFIG: list[str] = ["apikey", "location"]
+
+    # -------------------------------------------------------------------------
+
     def __init__(self, settings) -> None:
         self.config = settings
+    # __init__
 
-        if settings.info:
-            return
+    # -------------------------------------------------------------------------
 
-        path = '/translate'
-        self.constructed_url = 'https://api.cognitive.microsofttranslator.com' + path
+    def configure(self):
+        self.constructed_url = 'https://api.cognitive.microsofttranslator.com/translate'
         self.params = {
             'api-version': '3.0',
             'from': self.config.src.language,
@@ -46,37 +52,32 @@ class TranslatorAzure(TranslatorService):
             'Content-type': 'application/json',
             'X-ClientTraceId': str(uuid.uuid4())
         }
-    # __init__
-
-    # -------------------------------------------------------------------------
-
-    def get_capabilities(self) -> Capabilities:
-        return Capabilities(
-            description="Translator backend using Azure Translation Services",
-            supports_single=True,
-            supports_batch=False,
-            is_cloud=True
-        )
-    # get_capabilities
+    # configure
 
     # -------------------------------------------------------------------------
 
     def translate(self, texts_to_translate):
         try:
+            self.configure()
+
             translated_texts = []
-            for msgid in texts_to_translate:
+            for text_entry in texts_to_translate:
                 body = []
                 body.append({
-                    'text': msgid
+                    'text': text_entry["id"]
                 })
 
                 request = requests.post(self.constructed_url, params=self.params, headers=self.headers, json=body)
-                response = request.json()
+                if request.status_code == 200:
+                    response = request.json()
 
-                translated_texts.append({
-                    "msgid": msgid,
-                    "msgstr": response[0]['translations'][0]['text']
-                })
+                    translated_texts.append({
+                        "msgid": text_entry["id"],
+                        "msgctxt": text_entry["ctx"] if "ctx" in text_entry else "",
+                        "msgstr": response[0]['translations'][0]['text']
+                    })
+                else:
+                    logging.error("[🤐] Request to Azure service failed: %s", request.reason)
             # for
 
             return translated_texts
@@ -89,8 +90,12 @@ class TranslatorAzure(TranslatorService):
 
     # -------------------------------------------------------------------------
 
-    def translate_batch(self, texts_to_translate):
-        print("Bulk mode not supported by the Azure plugin")
-        pass
-    # translate_batch
+    def get_required_configuration(self):
+        meta = {}
+        for name, typ in self.__annotations__.items():
+            value = getattr(self, name, None)
+            meta[name] = value
+
+        return meta
+    # get_required_configuration
 # TranslatorAzure
