@@ -33,9 +33,14 @@ class TranslatorService(ABC):
         pass
     # translate
 
-    @abstractmethod
+    # -------------------------------------------------------------------------
+
     def get_required_configuration(self):
-        '''Returns the required configuration options (defined as __annotations__) of the plugin'''
-        pass
+        meta = {}
+        for name, typ in self.__annotations__.items():
+            value = getattr(self, name, None)
+            meta[name] = value
+
+        return meta
     # get_required_configuration
 # TranslatorService

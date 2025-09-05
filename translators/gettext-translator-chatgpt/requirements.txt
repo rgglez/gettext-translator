@@ -1,2 +1,2 @@
 openai==1.99.9
-translator_service==0.0.1
+gettext_translator_service

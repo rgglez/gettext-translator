@@ -16,18 +16,17 @@ limitations under the License.
 
 import traceback
 import requests
-import uuid
 import logging
 
 from gettext_translator_service import TranslatorService
-from rich.pretty import pprint
+from transformers import MarianMTModel, MarianTokenizer
 
 # -----------------------------------------------------------------------------
 
 
-class TranslatorAzure(TranslatorService):
+class TranslatorMarianMT(TranslatorService):
     # Configuration options required
-    REQUIRES_CONFIG: list[str] = ["apikey", "location"]
+    REQUIRES_CONFIG: list[str] = []
 
     # -------------------------------------------------------------------------
 
@@ -37,26 +36,13 @@ class TranslatorAzure(TranslatorService):
 
     # -------------------------------------------------------------------------
 
-    def configure(self):
-        self.constructed_url = 'https://api.cognitive.microsofttranslator.com/translate'
-        self.params = {
-            'api-version': '3.0',
-            'from': self.config.src.language,
-            'to': self.config.dst.language,
-            'textType': 'html'
-        }
-        self.headers = {
-            'Ocp-Apim-Subscription-Key': self.config.plugin_options["apikey"],
-            # location required if you're using a multi-service or regional (not global) resource.
-            'Ocp-Apim-Subscription-Region': self.config.plugin_options["location"],
-            'Content-type': 'application/json',
-            'X-ClientTraceId': str(uuid.uuid4())
-        }
-    # configure
-
-    # -------------------------------------------------------------------------
-
     def translate(self, texts_to_translate):
+        source_lang = self.config.src.name
+
+        model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
+        tokenizer = MarianTokenizer.from_pretrained(model_name)
+        model = MarianMTModel.from_pretrained(model_name)
+
         try:
             self.configure()
 
@@ -87,4 +73,4 @@ class TranslatorAzure(TranslatorService):
             traceback.print_stack()
             return []
     # translate
-# TranslatorAzure
+# TranslatorMarianMT

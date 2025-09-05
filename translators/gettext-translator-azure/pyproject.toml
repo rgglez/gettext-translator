@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "gettext-translator-azure"
 version = "0.0.1"
 description = "Azure implementation for translator-service"
-authors = [{ name="Rodolfo González González", email="github@rodolfo.gg" }]
+authors = [{ name="Rodolfo González González", email="code@rodolfo.gg" }]
 readme = "README.md"
 license = { text = "Apache 2.0" }
 dependencies = [

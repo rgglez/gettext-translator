@@ -103,7 +103,7 @@ Answer with an array of JSON in this form:
 [{{"msgid":"Original string", "msgstr":"Translated string", "msgctxt":"The context of the string"}}]
 
 Answer just with the translation results, do not add any other text. If an error occurs
-or a translation does not exist for a given id, use an empty string for "msgstr".
+or a translation does not exist for a given "id", use an empty string for "msgstr".
 
 The texts to translate follow:
 
@@ -138,15 +138,4 @@ The texts to translate follow:
 
         return translated_texts
     # translate
-
-    # -------------------------------------------------------------------------
-
-    def get_required_configuration(self):
-        meta = {}
-        for name, typ in self.__annotations__.items():
-            value = getattr(self, name, None)
-            meta[name] = value
-
-        return meta
-    # get_required_configuration
 # TranslatorChatGPT

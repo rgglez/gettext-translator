@@ -1,4 +1,4 @@
-# gettext-translator-azure
+# gettext-translator-marianmt
 
 Azure implementation for `translator-service`.
 

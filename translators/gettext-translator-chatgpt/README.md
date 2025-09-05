@@ -1,4 +1,4 @@
-# translator-chatgpt
+# gettext-translator-chatgpt
 
 ChatGPT API implementation for `translator-service`.
 
