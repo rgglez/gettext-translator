@@ -10,7 +10,11 @@ authors = [{ name="Rodolfo González González", email="code@rodolfo.gg" }]
 readme = "README.md"
 license = { text = "Apache 2.0" }
 dependencies = [
-    "gettext-translator-service>=0.0.1"
+    "gettext-translator-service>=0.0.1",
+    "transformers>=4.21.0",
+    "torch>=1.9.0",
+    "tokenizers>=0.13.0",
+    "rich>=12.0.0",
 ]
 
 [project.entry-points."gettext_translator_service.plugins"]

@@ -28,6 +28,11 @@ class TranslatorService(ABC):
     # __init__
 
     @abstractmethod
+    def configure(self):
+        pass
+    # configure
+
+    @abstractmethod
     def translate(self, texts):
         '''Translates one or more strings, depending on the backend'''
         pass

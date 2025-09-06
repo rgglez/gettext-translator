@@ -1,0 +1,5 @@
+gettext_translator_service
+transformers>=4.21.0
+torch>=1.9.0
+tokenizers>=0.13.0
+rich>=12.0.0

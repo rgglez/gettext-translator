@@ -15,11 +15,10 @@ limitations under the License.
 """
 
 import traceback
-import requests
-import logging
 
 from gettext_translator_service import TranslatorService
 from transformers import MarianMTModel, MarianTokenizer
+from rich.pretty import pprint
 
 # -----------------------------------------------------------------------------
 
@@ -36,34 +35,63 @@ class TranslatorMarianMT(TranslatorService):
 
     # -------------------------------------------------------------------------
 
+    def configure(self):
+        # Include the territory if present
+        source_lang = self.config.src.language + (("_" + self.config.src.territory) if self.config.src.territory else "")
+        target_lang = self.config.dst.language + (("_" + self.config.src.territory) if self.config.src.territory else "")
+
+        self.model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
+        self.tokenizer = MarianTokenizer.from_pretrained(self.model_name)
+        self.model = MarianMTModel.from_pretrained(self.model_name)
+    # configure
+
+    # -------------------------------------------------------------------------
+
     def translate(self, texts_to_translate):
-        source_lang = self.config.src.name
-
-        model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
-        tokenizer = MarianTokenizer.from_pretrained(model_name)
-        model = MarianMTModel.from_pretrained(model_name)
-
         try:
             self.configure()
 
+            batch_size = 100
+
             translated_texts = []
-            for text_entry in texts_to_translate:
-                body = []
-                body.append({
-                    'text': text_entry["id"]
-                })
 
-                request = requests.post(self.constructed_url, params=self.params, headers=self.headers, json=body)
-                if request.status_code == 200:
-                    response = request.json()
+            for i in range(0, len(texts_to_translate), batch_size):
+                batch = texts_to_translate[i:i + batch_size]
 
-                    translated_texts.append({
-                        "msgid": text_entry["id"],
-                        "msgctxt": text_entry["ctx"] if "ctx" in text_entry else "",
-                        "msgstr": response[0]['translations'][0]['text']
-                    })
-                else:
-                    logging.error("[🤐] Request to Azure service failed: %s", request.reason)
+                # Extract texts for translation
+                texts_for_translation = [entry["id"] for entry in batch]
+
+                # Tokenize the batch (padding + truncation for uniformity)
+                inputs = self.tokenizer(
+                    texts_for_translation,
+                    return_tensors="pt",
+                    padding=True,
+                    truncation=True,
+                    max_length=1024  # Adjust based on your needs
+                )
+
+                # Generate translations
+                outputs = self.model.generate(**inputs)
+
+                # Decode the batch
+                translated_batch = self.tokenizer.batch_decode(
+                    outputs,
+                    skip_special_tokens=True
+                )
+
+                # Create dictionary entries with msgid, msgstr, and optional msgctxt
+                for entry, translated in zip(batch, translated_batch):
+                    result = {
+                        "msgid": entry["id"],
+                        "msgstr": translated
+                    }
+
+                    # Add msgctxt if context exists
+                    if "ctx" in entry and entry["ctx"]:
+                        result["msgctxt"] = entry["ctx"]
+
+                    translated_texts.append(result)
+                # for
             # for
 
             return translated_texts

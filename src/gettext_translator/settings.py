@@ -118,7 +118,10 @@ class Settings(BaseSettings):
         if info.data.get('info'):
             return v  # Skip validation if info is present
         try:
-            json_object = json.loads(v)
+            if v:
+                json_object = json.loads(v)
+            else:
+                json_object = json.loads('{}')
             return json_object
         except ValueError:
             raise ValueError("plugin_options is not a valid json string")
