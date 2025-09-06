@@ -19,41 +19,6 @@ Currently, this system works with the following backends:
 - [OpenAI ChatGPT](translators/gettext-translator-chatgpt/README.md) backend (remote API).
 - [MarianMT](translators/gettext-translator-marianmt/README.md) backend (local).
 
-## Features
-
-- **Bulk Translation Mode**: Enhances efficiency by facilitating the translation of multiple text entries simultaneously. This mode is subject to availability by the backend.
-- **Comprehensive Logging**: Logs detailed information for progress monitoring and debugging purposes.
-- **Fuzzy Entry Exclusion**: Enables the option to omit 'fuzzy' entries from translation in `.po` files.
-- **Flexible Configuration**: Supports providing the configuration either through command-line arguments, the enviroment, a `.yaml` or a `.env` file.
-
-## Architecture
-
-This software was designed with extensibility as a priority, so it's not restricted to a single service or provider. It is based on an auto-discovery plugin system, and users can create additional plugins as needed.
-
-![class diagram](class_diagram.png "Class Diagram")
-
-## Requirements
-
-Check the `requirements.txt` files in the CLI program directory and in each of the plugin directories.
-
-## Configuration
-
-TODO
-
-## Installation
-
-### From source code
-
-You can install the main CLI program and each plugin using `pip` from their respective root directories.
-
-```
-pip install .
-```
-
-## From PyPI
-
-Once the system is more polished, packages will be published on PyPI. Stay tuned for updates.
-
 ### Information about the plugins
 
 You can view helpful information about the plugins, such as which configuration options specific to each one must be passed in the `--plugin-options` parameter. For example:
@@ -83,6 +48,38 @@ python gettext_translator.py --info --backend azure
   ]
 }
 </pre>
+
+## Features
+
+- **Bulk Translation Mode**: Enhances efficiency by facilitating the translation of multiple text entries simultaneously. This mode is subject to availability by the backend.
+- **Comprehensive Logging**: Logs detailed information for progress monitoring and debugging purposes.
+- **Fuzzy Entry Exclusion**: Enables the option to omit 'fuzzy' entries from translation in `.po` files.
+- **Flexible Configuration**: Supports providing the configuration either through command-line arguments, the enviroment, a `.yaml` or a `.env` file.
+
+## Architecture
+
+This software was designed with extensibility as a priority, so it's not restricted to a single service or provider. It is based on an auto-discovery plugin system, and users can create additional plugins as needed.
+
+![class diagram](class_diagram.png "Class Diagram")
+
+## Requirements
+
+Check the `requirements.txt` files in the CLI program directory and in each of the plugin directories.
+
+## Installation
+
+### From source code
+
+You can install the main CLI program and each plugin using `pip` from their respective root directories, 
+after cloning the repository.
+
+```
+pip install .
+```
+
+## From PyPI
+
+Once the system is more polished, packages will be published on PyPI. Stay tuned for updates.
 
 ## Logging
 
