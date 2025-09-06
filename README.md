@@ -7,7 +7,15 @@
 ![GitHub stars](https://img.shields.io/github/stars/rgglez/gettext-translator?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/rgglez/gettext-translator?style=social)
 
-This program allows to translate [PO](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html) files, as defined by [gettext](https://www.gnu.org/software/gettext/) using different cloud and local services. Currently it works reasonabily well with Microsoft Azure AI Translator and OpenAI ChatGPT.
+This program uses several cloud and local services to translate [gettext](https://www.gnu.org/software/gettext/) [PO](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html) files.
+
+## Backends
+
+Currently, this system works with the following backends:
+
+- Microsoft Azure AI Translator.
+- OpenAI ChatGPT.
+- Helsinki-NLP OPUS multilingual using transformers.
 
 ## Features
 
@@ -16,17 +24,15 @@ This program allows to translate [PO](https://www.gnu.org/software/gettext/manua
 - **Fuzzy Entry Exclusion**: Enables the option to omit 'fuzzy' entries from translation in `.po` files.
 - **Flexible Configuration**: Supports providing the configuration either through command-line arguments, the enviroment, a `.yaml` or a `.env` file.
 
-## Architechture
+## Architecture
 
-This software was designed with extensibility as a priority, so as not to restrict it to a single service or provider.
+This software was designed with extensibility as a priority, so it's not restricted to a single service or provider. It is based on an auto-discovery plugin system, and users can create additional plugins as needed.
 
-It is based on an auto-discovery plugin system. Additional plugins can be created by users if needed.
-
-More TODO
+![class diagram](class_diagram.png "Class Diagram")
 
 ## Requirements
 
-TODO
+Check the `requirements.txt` files in the CLI program directory and in each of the plugin directories.
 
 ## Configuration
 
@@ -34,17 +40,29 @@ TODO
 
 ## Installation
 
-TODO
+### From source code
+
+You can install the main CLI program and each plugin using `pip` from their respective root directories.
+
+```
+pip install .
+```
+
+## From PyPI
+
+Once the system is more polished, packages will be published on PyPI. Stay tuned for updates.
 
 ## Usage
 
-Use `gettext-translator` as a command-line tool.
+To use `gettext-translator` as a command-line tool, see the `README.md` file in each plugin's directory for examples:
+
+- [Azure AI Translator](translators/gettext-translator-azure/README.md) backend.
+- [OpenAI ChatGPT](translators/gettext-translator-chatgpt/README.md) backend.
+- [MarianMT](translators/gettext-translator-marianmt/README.md) backend.
 
 ### Information about the plugins
 
-You can view some helpful information about the plugins, for instance, which
-configuration options specific to each plugin must be passed in the
-`--plugin-options` parameter. For example:
+You can view helpful information about the plugins, such as which configuration options specific to each one must be passed in the `--plugin-options` parameter. For example:
 
 ```bash
 python gettext_translator.py --info --backend chatgpt
@@ -74,14 +92,15 @@ python gettext_translator.py --info --backend azure
 
 ## Logging
 
-The script logs detailed information about the files being processed.
+The script logs detailed information about the files being processed, the backend's output and more.
 
 ## Notes
 
 * It is recommended that you learn about [gettext](https://www.gnu.org/software/gettext/) and the [format of PO files](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html).
 * Why gettext?
-  * First and most relevant reason: it uses the full strings in the original language as key, so you don't have to be searching for weird keys such as "page.title.hello" or "item.specification". If one translation doesn't exist, the original key string is used.
-  * It's a GNU standard, tried and trusted.
+  * It uses full strings in the original language as keys. This is the most relevant reason, as it means you don't have to search for abstract keys like `page.title.hello` or `item.specification`. While that approach may work for a few strings, it becomes complicated with hundreds of thousands of them.
+  * The original key string is used as a fallback. If a translation doesn't exist, the original string is displayed.
+  * It's a tried and trusted GNU standard.
 * This software was inspired by [pescheckit/python-gpt-po](https://github.com/pescheckit/python-gpt-po).
 * **This software is work in progress**
 

@@ -1,6 +1,6 @@
 # gettext-translator-azure
 
-Azure implementation for `gettext-translator-service`.
+Azure AI Translator implementation for `gettext-translator-service`.
 
 ## Usage from gettext-translator
 
