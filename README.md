@@ -9,13 +9,15 @@
 
 This program uses several cloud and local services to translate [gettext](https://www.gnu.org/software/gettext/) [PO](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html) files.
 
-## Backends
+## Backends and how to use
+
+To use `gettext-translator` as a command-line tool, see the `README.md` file in each plugin's directory.
 
 Currently, this system works with the following backends:
 
-- Microsoft Azure AI Translator.
-- OpenAI ChatGPT.
-- Helsinki-NLP OPUS multilingual using transformers.
+- [Microsoft Azure AI Translator](translators/gettext-translator-azure/README.md) backend (remote API).
+- [OpenAI ChatGPT](translators/gettext-translator-chatgpt/README.md) backend (remote API).
+- [MarianMT](translators/gettext-translator-marianmt/README.md) backend (local).
 
 ## Features
 
@@ -51,14 +53,6 @@ pip install .
 ## From PyPI
 
 Once the system is more polished, packages will be published on PyPI. Stay tuned for updates.
-
-## Usage
-
-To use `gettext-translator` as a command-line tool, see the `README.md` file in each plugin's directory for examples:
-
-- [Azure AI Translator](translators/gettext-translator-azure/README.md) backend.
-- [OpenAI ChatGPT](translators/gettext-translator-chatgpt/README.md) backend.
-- [MarianMT](translators/gettext-translator-marianmt/README.md) backend.
 
 ### Information about the plugins
 
