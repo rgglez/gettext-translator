@@ -91,7 +91,7 @@ The script logs detailed information about the files being processed, the backen
 
 * It is recommended that you learn about [gettext](https://www.gnu.org/software/gettext/) and the [format of PO files](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html).
 * Why gettext?
-  * It uses full strings in the original language as keys. This is the most relevant reason, as it means you don't have to search for abstract keys like `page.title.hello` or `item.specification`. While that approach may work for a few strings, it becomes complicated with hundreds of thousands of them.
+  * It uses full strings in the original language as keys. This is the most relevant reason, as it means you don't have to search for abstract keys like `page.title.hello` or `item.specification`. While that approach may work for a few strings, it becomes complicated with hundreds or thousands of them.
   * The original key string is used as a fallback. If a translation doesn't exist, the original string is displayed.
   * It's a tried and trusted GNU standard.
 * This software was inspired by [pescheckit/python-gpt-po](https://github.com/pescheckit/python-gpt-po).
