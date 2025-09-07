@@ -19,6 +19,8 @@ Currently, this system works with the following backends:
 - [OpenAI ChatGPT](translators/gettext-translator-chatgpt/README.md) backend (remote API).
 - [MarianMT](translators/gettext-translator-marianmt/README.md) backend (local).
 
+Refer to each plugin's README.md file listed above to view usage examples.
+
 ### Information about the plugins
 
 You can view helpful information about the plugins, such as which configuration options specific to each one must be passed in the `--plugin-options` parameter. For example:
