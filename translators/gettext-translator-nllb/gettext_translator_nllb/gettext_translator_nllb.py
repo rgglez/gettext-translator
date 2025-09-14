@@ -49,7 +49,7 @@ class TranslatorNLLB:
         self.tokenizer = AutoTokenizer.from_pretrained("facebook/" + self.config.plugin_options["model"])
         self.model = AutoModelForSeq2SeqLM.from_pretrained("facebook/" + self.config.plugin_options["model"])
 
-        # NLLB needs an 3-letter language code and the scripting system
+        # NLLB needs a 3-letter language code and the scripting system
         self.src_lang = self.config.src.to_alpha3() + "_" + self.config.src.script
         self.dst_lang = self.config.dst.to_alpha3() + "_" + self.config.dst.script
 
