@@ -1,4 +1,4 @@
-# gettext-translator-NLLB
+# gettext-translator-nllb
 
 NLLB implementation for `gettext-translator-service`.
 
