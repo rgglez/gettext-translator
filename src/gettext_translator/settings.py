@@ -106,7 +106,7 @@ class Settings(BaseSettings):
     @classmethod
     def validate_iso639(cls, v, info):
         if Language.get(v).is_valid():
-            return Language.get(v)
+            return Language.get(v).maximize()
         raise ValueError("invalid language code")
     # validate_iso639
 

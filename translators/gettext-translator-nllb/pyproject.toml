@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gettext-translator-nllb"
+version = "0.0.1"
+description = "NLLB implementation for translator-service"
+authors = [{ name="Rodolfo González González", email="code@rodolfo.gg" }]
+readme = "README.md"
+license = { text = "Apache 2.0" }
+dependencies = [
+    "gettext-translator-service>=0.0.1",
+    "transformers>=4.21.0",
+    "torch>=1.9.0",
+    "tokenizers>=0.13.0",
+    "rich>=12.0.0",
+    "accelerate",
+]
+
+[project.entry-points."gettext_translator_service.plugins"]
+nllb = "gettext_translator_nllb:TranslatorNLLB"
