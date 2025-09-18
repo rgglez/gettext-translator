@@ -65,6 +65,8 @@ class TranslatorNLLB:
             self.configure()
 
             translated_texts = []
+            i = 0
+            total = len(texts_to_translate)
 
             for text_entry in texts_to_translate:
                 if 'id' not in text_entry:
@@ -82,6 +84,9 @@ class TranslatorNLLB:
                 self.tokenizer.src_lang = self.src_lang
                 inputs = self.tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
                 inputs = inputs.to(self.device)
+
+                i = i + 1
+                print("[📝 " + i + "/" + total + "] " + input_text)
 
                 # Generate translation. 512 is the maximun token length
                 with torch.no_grad():
