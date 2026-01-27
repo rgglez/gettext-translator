@@ -8,7 +8,7 @@ version = "0.0.1"
 description = "ChatGPT API implementation for translator-service"
 authors = [{ name="Rodolfo González González", email="code@rodolfo.gg" }]
 readme = "README.md"
-license = { text = "Apache 2.0" }
+license = { text = "GPL 3.0" }
 dependencies = [
     "gettext-translator-service>=0.0.1",
     "openai==1.99.9"

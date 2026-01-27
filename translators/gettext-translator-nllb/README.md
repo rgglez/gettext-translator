@@ -5,10 +5,14 @@ NLLB implementation for `gettext-translator-service`.
 ## Usage from gettext-translator
 
 ```bash
-python gettext_translator.py --backend nllb --src es --dst de_DE --plugin_options="{\"model\":\"nllb-200-1.3B\"}" --po ../../example/messages.po
+python gettext_translator.py --backend nllb --src es --dst de_DE --coonfig nllb-sample.yaml --po ../../example/messages.po
 ```
 
 This command translates the `messages.po` file from Spanish into German from Germany (de_DE), using the [NLLB-200's 1.3B](https://huggingface.co/facebook/nllb-200-1.3B) model. This plugin runs locally.
+
+## Configuration
+
+* `model` is the model to be used. See below.
 
 ## Available models
 
@@ -19,7 +23,7 @@ This command translates the `messages.po` file from Spanish into German from Ger
 ## Loading the plugin
 
 ```python
-from translator_service import load_plugins
+from gettext_translator_service import load_plugins
 
 plugins = load_plugins()
 impl_cls = plugins["TranslatorNLLB"]
@@ -33,6 +37,6 @@ In my tests, `nllb-200-1.3B` did the best contextual translation for the sample 
 
 ## License
 
-Copyright 2025 Rodolfo González González.
+Copyright (C) 2026 Rodolfo González González.
 
-Licensed under [Apache version 2.0](https://www.apache.org/licenses/LICENSE-2.0). Please read the [LICENSE](LICENSE) file.
+Licensed under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html).

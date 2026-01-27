@@ -5,15 +5,20 @@ Azure AI Translator implementation for `gettext-translator-service`.
 ## Usage from gettext-translator
 
 ```bash
-python gettext_translator.py --backend azure --plugin_options="{\"apikey\":\"brown-fox\", \"location\":\"westus3\"}" --src en --dst es_MX --po /path/to/example/messages.po
+python gettext_translator.py --backend azure --config azure-sample.yaml --src en --dst es_MX --po /path/to/example/messages.po
 ```
 
-This command translates the `messages.po` file from English into Mexican Spanish (es_MX), using the provided Azure AI Translator key in the `westus3` location.
+This command translates the `messages.po` file from English into Mexican Spanish (es_MX), using the provided Azure AI Translator key in the `westus3` location. See the [azure-sample.yaml](azure-sample.yaml) configuration file for the example.
+
+## Configuration
+
+* `apikey` your Azure translation API key.
+* `location` the location of the translation service.
 
 ## Loading the plugin
 
 ```python
-from translator_service import load_plugins
+from gettext_translator_service import load_plugins
 
 plugins = load_plugins()
 impl_cls = plugins["TranslatorAzure"]
@@ -28,6 +33,6 @@ impl.connect()
 
 ## License
 
-Copyright 2025 Rodolfo González González.
+Copyright (C) 2026 Rodolfo González González.
 
-Licensed under [Apache version 2.0](https://www.apache.org/licenses/LICENSE-2.0). Please read the [LICENSE](LICENSE) file.
+Licensed under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html).
