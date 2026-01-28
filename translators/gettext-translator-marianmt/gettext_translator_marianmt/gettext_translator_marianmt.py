@@ -39,8 +39,8 @@ class TranslatorMarianMT(TranslatorService):
 
     def configure(self):
         # Include the territory if present
-        source_lang = self.config.src.language + (("_" + self.config.src.territory) if self.config.src.territory != "" else "")
-        target_lang = self.config.dst.language + (("_" + self.config.dst.territory) if self.config.dst.territory != "" else "")
+        source_lang = self.config.src.language
+        target_lang = self.config.dst.language
 
         self.model_name = f"Helsinki-NLP/opus-mt-{source_lang}-{target_lang}"
         self.tokenizer = MarianTokenizer.from_pretrained(self.model_name)

@@ -25,6 +25,14 @@ impl = impl_cls()
 impl.connect()
 ```
 
+## Notes
+
+* You might need to get a token from HuggingFace and set this enviroment variable in order to avoid limits:
+
+```bash
+export HF_TOKEN=hf_xxxxxxxxxxxxxxxxx
+```
+
 ## License
 
 Copyright (C) 2026 Rodolfo González González.

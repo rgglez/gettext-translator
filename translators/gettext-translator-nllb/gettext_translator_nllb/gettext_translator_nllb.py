@@ -17,8 +17,11 @@
 """
 
 import traceback
+
+import yaml
 import torch
 import warnings
+import os
 from rich.pretty import pprint
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from gettext_translator_service import TranslatorService
@@ -43,21 +46,36 @@ class TranslatorNLLB(TranslatorService):
 
     def __init__(self, settings) -> None:
         self.config = settings
+        if os.path.exists(self.config.config):
+            with open(self.config.config) as stream:
+                try:
+                    yaml_file = yaml.safe_load(stream)
+                    self.config.model = yaml_file["model"]
+                except yaml.YAMLError as exc:
+                    print(exc)
+        else:
+            raise Exception("[🚫] Configuration file not found")
     # __init__
 
     # -------------------------------------------------------------------------
 
     def configure(self):
+        # Use GPU if available
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+
         # Load the model
-        self.tokenizer = AutoTokenizer.from_pretrained("facebook/" + self.config.plugin_options["model"])
-        self.model = AutoModelForSeq2SeqLM.from_pretrained("facebook/" + self.config.plugin_options["model"])
+        self.tokenizer = AutoTokenizer.from_pretrained("facebook/" + self.config.model)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(
+            "facebook/" + self.config.model,
+            tie_word_embeddings=False,
+            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+            device_map="auto"
+        )
 
         # NLLB needs a 3-letter language code and the scripting system
         self.src_lang = self.config.src.to_alpha3() + "_" + self.config.src.script
         self.dst_lang = self.config.dst.to_alpha3() + "_" + self.config.dst.script
 
-        # Use GPU if available
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.model.to(self.device)
     # configure
 
@@ -89,15 +107,15 @@ class TranslatorNLLB(TranslatorService):
                 inputs = inputs.to(self.device)
 
                 i = i + 1
-                print("[📝 " + i + "/" + total + "] " + input_text)
+                print(f"[📝 {i}/{total}] {input_text}", i, total, input_text)
 
                 # Generate translation. 512 is the maximun token length
                 with torch.no_grad():
                     generated_tokens = self.model.generate(
                         **inputs,
                         forced_bos_token_id=self.tokenizer.convert_tokens_to_ids(self.dst_lang),
-                        max_length=512,
-                        num_beams=5,
+                        max_length=50,
+                        num_beams=1,
                         early_stopping=True
                     )
                 # with
