@@ -22,11 +22,45 @@ Currently this system works with the following backends:
 
 Please remember: refer to each plugin's `README.md` files listed above to view information about each plugin.
 
-## Architecture
+## General arguments
 
-This software was designed with extensibility as a priority, so it's not restricted to a single service or provider. It is based on an auto-discovery plugin system, and users can create additional plugins as needed.
+The command line tool supports the following arguments:
 
-![class diagram](class_diagram.png "Class Diagram")
+- ```--info```: Shows information about the backend.
+- ```--backend```: Which backend to use.
+- ```--po```: The path to the .po file.
+- ```--src```: The source language.
+- ```--dst```: The language to translate to.
+- ```--fuzzy```: Fuzzy translations?
+- ```--ascribe```: Include a comment in each entry indicating that it was translated with AI.
+- ```--config```: Path to the .yaml configuration file for the backend.
+- ```--help```: Shows the help message.
+
+### Examples
+
+First, change to the `src/gettext_translator` directory:
+
+```bash
+cd src/gettext_translator/
+```
+
+Show information about the ChatGPT backend:
+
+```bash
+python gettext_translator.py --info --backend chatgpt
+```
+
+Translate using the Azure AI Translator backend:
+
+```bash
+python gettext_translator.py --backend azure --src es --dst de_DE --config ../../translators/gettext-translator-azure/azure-sample.yaml --po ../../example/messages.po
+```
+
+Translate using the ChatGPT backend, adding a comment attributing translations to AI:
+
+```bash
+python gettext_translator.py --backend chatgpt --src es --dst de_DE --config ../../translators/gettext-translator-chatgpt/chatgpt-sample.yaml --po ../../example/messages.po --ascribe=true
+```
 
 ## Requirements
 
@@ -36,7 +70,15 @@ See the `requirements.txt` files in the main CLI program directory and in each o
 
 ### From source code
 
-You can install the main CLI program and each plugin using `pip` from their respective root directories.
+You can install the main CLI program and each plugin using `pip` from their respective root directories. For example:
+
+Change to a translator directory:
+
+```bash
+cd translators/gettext-translator-azure/
+```
+
+Install it:
 
 ```bash
 pip install .
@@ -50,7 +92,7 @@ pip install -e .
 
 ### Information about the plugins
 
-You can view helpful information about the plugins, such as which configuration options specific to each one must be passed in the `--plugin-options` parameter. For example:
+You can view which options are available for each plugin using the `--info` argument:
 
 ```bash
 python gettext_translator.py --info --backend chatgpt
@@ -79,6 +121,14 @@ python gettext_translator.py --info --backend azure
 }
 </pre>
 
+See the README.md files in each plugin's directory under ```translators/``` for more information about the options.
+
+## Architecture
+
+This software was designed with extensibility as a priority, so it's not restricted to a single service or provider. It is based on an auto-discovery plugin system, and users can create additional plugins as needed.
+
+![class diagram](class_diagram.png "Class Diagram")
+
 ## Notes
 
 * It is recommended that you learn about [gettext](https://www.gnu.org/software/gettext/) and the [format of PO files](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html). But of course, if you are reading this, you should already know it.
@@ -86,8 +136,7 @@ python gettext_translator.py --info --backend azure
   * It uses full strings in the source language as keys. This is the most relevant reason, as it means you don't have to search for abstract keys like `page.title.hello` or `item.specification`. While that approach may work for a few strings, it becomes complicated and chaotic with hundreds or thousands of them.
   * The original key string is used as a fallback. If a translation doesn't exist, the original string is displayed.
   * It's a tried and trusted GNU standard.
-* This software was inspired by [pescheckit/python-gpt-po](https://github.com/pescheckit/python-gpt-po).
-* For the example PO file, the best results were obtained using Azure's AI Translator service.
+* For the example PO file, the best contextual results were obtained using Azure's AI Translator service.
 
 ## License
 

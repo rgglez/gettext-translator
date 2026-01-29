@@ -25,8 +25,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import (
     PydanticBaseSettingsSource
 )
-from pydantic import Field, field_validator
-from typing import Any, Dict, Tuple
+from pydantic import Field, field_validator, model_validator
+from typing import Any, Dict, Self, Tuple
 from langcodes import Language
 
 # -----------------------------------------------------------------------------
@@ -74,6 +74,7 @@ class Settings(BaseSettings):
     src: str = Field(default=Language.make(language='en').language)
     dst: str = Field(default=Language.make(language='en').language)
     fuzzy: bool = Field(default=True)
+    ascribe: bool = Field(default=False)
     config: str = Field(default="config.yaml")
 
     # -------------------------------------------------------------------------
@@ -100,6 +101,15 @@ class Settings(BaseSettings):
 
     # -------------------------------------------------------------------------
 
+    @model_validator(mode='after')
+    def validar_info_backend(self) -> Self:
+        if self.info and not self.backend:
+            raise ValueError("please tell me which backend do you want to see information about")
+        return self
+    # validar_info_backend
+
+    # -------------------------------------------------------------------------
+
     @classmethod
     def parse_cli_args(cls):
         parser = argparse.ArgumentParser()
@@ -109,7 +119,9 @@ class Settings(BaseSettings):
         parser.add_argument("--src", type=str, default=Language.make(language='en').language, help="The source language")
         parser.add_argument("--dst", type=str, help="The language to translate to")
         parser.add_argument("--fuzzy", type=lambda x: x.lower() in ["true", "1", "yes"], help="Fuzzy translations?")
-        parser.add_argument("--config", type=str, default="config.yaml", help="Path to the .yaml configuration file for the backend.")
+        parser.add_argument("--ascribe", default=False, type=lambda x: x.lower() in ["true", "1", "yes"],
+                            help="Include a comment in each entry indicating that it was translated with AI")
+        parser.add_argument("--config", type=str, default="config.yaml", required=False, help="Path to the .yaml configuration file for the backend.")
         args = parser.parse_args()
         return args
     # parse_cli_args

@@ -37,20 +37,21 @@ class TranslatorChatGPT(TranslatorService):
     def __init__(self, settings) -> None:
         self.config = settings
 
-        if os.path.exists(self.config.config):
-            with open(self.config.config) as stream:
-                try:
-                    yaml_file = yaml.safe_load(stream)
-                    self.config.model = yaml_file["model"]
-                    if "env:" in yaml_file["apikey"]:
-                        self.config.apikey = os.getenv(yaml_file["apikey"].replace("env:", ""))
-                    else:
-                        self.config.apikey = yaml_file["apikey"]
+        if not self.config.info:
+            if os.path.exists(self.config.config):
+                with open(self.config.config) as stream:
+                    try:
+                        yaml_file = yaml.safe_load(stream)
+                        self.config.model = yaml_file["model"]
+                        if "env:" in yaml_file["apikey"]:
+                            self.config.apikey = os.getenv(yaml_file["apikey"].replace("env:", ""))
+                        else:
+                            self.config.apikey = yaml_file["apikey"]
 
-                except yaml.YAMLError as exc:
-                    print(exc)
-        else:
-            raise Exception("[🚫] Configuration file not found")
+                    except yaml.YAMLError as exc:
+                        print(exc)
+            else:
+                raise Exception("[🚫] Configuration file not found")
     # __init__
 
     # -------------------------------------------------------------------------

@@ -76,6 +76,8 @@ class GettextTranslator:
         if entry:
             logging.info("[⚙️] Applying to %s", entry.msgid)
             entry.msgstr = translated_text
+            if self.config.ascribe:
+                entry.comment = "AI-translated"
     # update_po_entry
 
     # -------------------------------------------------------------------------
@@ -134,7 +136,7 @@ class GettextTranslator:
         """
         caps = self.service.get_required_configuration()
         print(json.dumps(caps, indent=2))
-    # get_capabilities
+    # get_required_configuration
 # GettextTranslator
 
 # -----------------------------------------------------------------------------

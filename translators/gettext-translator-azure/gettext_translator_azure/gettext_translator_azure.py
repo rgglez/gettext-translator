@@ -38,19 +38,20 @@ class TranslatorAzure(TranslatorService):
     def __init__(self, settings) -> None:
         self.config = settings
 
-        if os.path.exists(self.config.config):
-            with open(self.config.config) as stream:
-                try:
-                    yaml_file = yaml.safe_load(stream)
-                    self.config.location = yaml_file["location"]
-                    self.config.endpoint = yaml_file["endpoint"]
-                    if "env:" in yaml_file["apikey"]:
-                        self.config.apikey = os.getenv(yaml_file["apikey"].replace("env:", ""))
-                    else:
-                        self.config.apikey = yaml_file["apikey"]
+        if not self.config.info:
+            if os.path.exists(self.config.config):
+                with open(self.config.config) as stream:
+                    try:
+                        yaml_file = yaml.safe_load(stream)
+                        self.config.location = yaml_file["location"]
+                        self.config.endpoint = yaml_file["endpoint"]
+                        if "env:" in yaml_file["apikey"]:
+                            self.config.apikey = os.getenv(yaml_file["apikey"].replace("env:", ""))
+                        else:
+                            self.config.apikey = yaml_file["apikey"]
 
-                except yaml.YAMLError as exc:
-                    print(exc)
+                    except yaml.YAMLError as exc:
+                        print(exc)
     # __init__
 
     # -------------------------------------------------------------------------
