@@ -12,7 +12,9 @@ This command translates the `messages.po` file from English into Canadian French
 
 ## Configuration
 
-* `apikey` your OpenAI ChatGPT API key.
+* `apikey`
+  - Your OpenAI ChatGPT API key.
+  - Or, if you prefix the string with "env:", the value of the environment variable with the same name will be used. Example: apikey="env:MY_OPENAI_API_KEY" and then in the shell ```export MY_OPENAI_API_KEY="sk-..."```.
 * `model` the model you want to use. See the Notes below.
 
 ## Loading the plugin
@@ -29,6 +31,7 @@ impl.connect()
 ## Notes
 
 - You can find the name of the OpenAI ChatGPT models and their pricing [here](https://openai.com/api/pricing/).
+- Of course, you need an [OpenAI API key](https://platform.openai.com/settings/organization/api-keys).
 
 ## License
 

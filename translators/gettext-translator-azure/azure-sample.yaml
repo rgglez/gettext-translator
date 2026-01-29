@@ -1,2 +1,3 @@
-apikey: "brown-fox"
+apikey: "env:AZURE_OPENAI_API_KEY"
 location: "westus3"
+endpoint: "https://api.cognitive.microsofttranslator.com/"

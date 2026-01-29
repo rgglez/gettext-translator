@@ -12,8 +12,11 @@ This command translates the `messages.po` file from English into Mexican Spanish
 
 ## Configuration
 
-* `apikey` your Azure translation API key.
+* `apikey`
+  - your Azure translation API key.
+  - Or, if you prefix the string with "env:", the value of the environment variable with the same name will be used. Example: apikey="env:MY_AZURE_API_KEY" and then in the shell ```export MY_AZURE_API_KEY="sk-..."```.
 * `location` the location of the translation service.
+* `endpoint` the endpoint of the translation service.
 
 ## Loading the plugin
 

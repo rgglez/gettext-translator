@@ -46,6 +46,7 @@ class TranslatorNLLB(TranslatorService):
 
     def __init__(self, settings) -> None:
         self.config = settings
+        
         if os.path.exists(self.config.config):
             with open(self.config.config) as stream:
                 try:

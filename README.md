@@ -15,12 +15,12 @@ To use `gettext-translator` as a command-line tool, see the `README.md` file in 
 
 Currently this system works with the following backends:
 
-- [Azure AI Translator](translators/gettext-translator-azure/README.md) backend (remote API, several models).
+- [Azure AI Translator](translators/gettext-translator-azure/README.md) backend (remote API).
 - [OpenAI ChatGPT](translators/gettext-translator-chatgpt/README.md) backend (remote API, several models).
 - [MarianMT](translators/gettext-translator-marianmt/README.md) backend (local model).
 - [NLLB](translators/gettext-translator-nllb/README.md) backend (local model).
 
-Again, refer to each plugin's `README.md` file listed above to view usage examples.
+Please remember: refer to each plugin's `README.md` files listed above to view information about each plugin.
 
 ## Architecture
 
@@ -30,7 +30,7 @@ This software was designed with extensibility as a priority, so it's not restric
 
 ## Requirements
 
-See the `requirements.txt` files in the CLI program directory and in each of the plugin directories.
+See the `requirements.txt` files in the main CLI program directory and in each of the plugin directories.
 
 ## Installation
 
@@ -38,9 +38,16 @@ See the `requirements.txt` files in the CLI program directory and in each of the
 
 You can install the main CLI program and each plugin using `pip` from their respective root directories.
 
-```
+```bash
 pip install .
 ```
+
+If you want to modify something, install the plugins in editable mode:
+
+```bash
+pip install -e .
+```
+
 ### Information about the plugins
 
 You can view helpful information about the plugins, such as which configuration options specific to each one must be passed in the `--plugin-options` parameter. For example:
@@ -66,19 +73,21 @@ python gettext_translator.py --info --backend azure
 {
   "REQUIRES_CONFIG": [
     "apikey",
-    "location"
+    "location",
+    "endpoint"
   ]
 }
 </pre>
 
 ## Notes
 
-* It is recommended that you learn about [gettext](https://www.gnu.org/software/gettext/) and the [format of PO files](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html).
+* It is recommended that you learn about [gettext](https://www.gnu.org/software/gettext/) and the [format of PO files](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html). But of course, if you are reading this, you should already know it.
 * Why gettext?
-  * It uses full strings in the original language as keys. This is the most relevant reason, as it means you don't have to search for abstract keys like `page.title.hello` or `item.specification`. While that approach may work for a few strings, it becomes complicated with hundreds or thousands of them.
+  * It uses full strings in the source language as keys. This is the most relevant reason, as it means you don't have to search for abstract keys like `page.title.hello` or `item.specification`. While that approach may work for a few strings, it becomes complicated and chaotic with hundreds or thousands of them.
   * The original key string is used as a fallback. If a translation doesn't exist, the original string is displayed.
   * It's a tried and trusted GNU standard.
 * This software was inspired by [pescheckit/python-gpt-po](https://github.com/pescheckit/python-gpt-po).
+* For the example PO file, the best results were obtained using Azure's AI Translator service.
 
 ## License
 

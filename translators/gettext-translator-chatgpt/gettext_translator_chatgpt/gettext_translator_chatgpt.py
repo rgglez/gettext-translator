@@ -19,6 +19,9 @@
 
 import json
 import logging
+import os
+
+import yaml
 from gettext_translator_service import TranslatorService
 from openai import OpenAI
 
@@ -33,12 +36,27 @@ class TranslatorChatGPT(TranslatorService):
 
     def __init__(self, settings) -> None:
         self.config = settings
+
+        if os.path.exists(self.config.config):
+            with open(self.config.config) as stream:
+                try:
+                    yaml_file = yaml.safe_load(stream)
+                    self.config.model = yaml_file["model"]
+                    if "env:" in yaml_file["apikey"]:
+                        self.config.apikey = os.getenv(yaml_file["apikey"].replace("env:", ""))
+                    else:
+                        self.config.apikey = yaml_file["apikey"]
+
+                except yaml.YAMLError as exc:
+                    print(exc)
+        else:
+            raise Exception("[🚫] Configuration file not found")
     # __init__
 
     # -------------------------------------------------------------------------
 
     def configure(self):
-        self.client = OpenAI(api_key=self.config.plugin_options["apikey"])
+        self.client = OpenAI(api_key=self.config.apikey)
 
         # Validate the OpenAI connection
         if not self.validate_openai_connection():
@@ -52,7 +70,7 @@ class TranslatorChatGPT(TranslatorService):
         """Validates the OpenAI connection by making a test API call."""
         try:
             test_message = {"role": "system", "content": "Test message."}
-            self.client.chat.completions.create(model=self.config.plugin_options["model"], messages=[test_message])
+            self.client.chat.completions.create(model=self.config.model, messages=[test_message])
             logging.info("[✔️] OpenAI connection validated successfully.")
             return True
         except Exception as e:  # pylint: disable=W0718
@@ -66,7 +84,7 @@ class TranslatorChatGPT(TranslatorService):
         """Takes a translation request and appends the translated texts to the translated_texts list."""
         message = {"role": "user", "content": translation_request}
         logging.debug("[ℹ️] Translation request: %s", translation_request)
-        completion = self.client.chat.completions.create(model=self.config.plugin_options["model"], messages=[message])
+        completion = self.client.chat.completions.create(model=self.config.model, messages=[message])
 
         response = completion.choices[0].message.content.strip()
 
@@ -93,8 +111,8 @@ class TranslatorChatGPT(TranslatorService):
         destination_language = self.config.dst.display_name("en")
 
         translation_prompt = """
-Translate the following strings from {} to {}. The strings are given
-in the form of a JSON array:
+You are an expert translator. Translate the following strings
+from {} to {}. The strings are given in the form of a JSON array:
 
 [{{"id":"Original string","ctx":"The context of the string"}}]
 

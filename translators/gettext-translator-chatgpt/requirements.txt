@@ -1,2 +1,3 @@
 openai==1.99.9
 gettext_translator_service
+language_data
