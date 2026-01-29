@@ -15,10 +15,10 @@ To use `gettext-translator` as a command-line tool, see the `README.md` file in 
 
 Currently this system works with the following backends:
 
-- [Azure AI Translator](translators/gettext-translator-azure/README.md) backend (remote API).
-- [OpenAI ChatGPT](translators/gettext-translator-chatgpt/README.md) backend (remote API, several models).
-- [MarianMT](translators/gettext-translator-marianmt/README.md) backend (local model).
-- [NLLB](translators/gettext-translator-nllb/README.md) backend (local model).
+- **Azure AI Translator** ([README](translators/gettext-translator-azure/README.md)): remote API, commercial, API key required.
+- **OpenAI ChatGPT** ([README](translators/gettext-translator-chatgpt/README.md)): remote API, several models, commercial, API key required.
+- **MarianMT** ([README](translators/gettext-translator-marianmt/README.md)): local *Helsinki-NLP* model, free, auth token might be required.
+- **NLLB** ([README](translators/gettext-translator-nllb/README.md)): local model, free, auth token might be required.
 
 Please remember: refer to each plugin's `README.md` files listed above to view information about each plugin.
 
@@ -33,7 +33,7 @@ The command line tool supports the following arguments:
 - ```--dst```: The language to translate to.
 - ```--fuzzy```: Fuzzy translations?
 - ```--ascribe```: Include a comment in each entry indicating that it was translated with AI.
-- ```--config```: Path to the .yaml configuration file for the backend.
+- ```--config```: Path to the YAML configuration file for the backend.
 - ```--help```: Shows the help message.
 
 ### Examples
@@ -72,7 +72,7 @@ See the `requirements.txt` files in the main CLI program directory and in each o
 
 You can install the main CLI program and each plugin using `pip` from their respective root directories. For example:
 
-Change to a translator directory:
+Change to a translator directory, for example:
 
 ```bash
 cd translators/gettext-translator-azure/
@@ -90,7 +90,7 @@ If you want to modify something, install the plugins in editable mode:
 pip install -e .
 ```
 
-### Information about the plugins
+## Information about the plugins
 
 You can view which options are available for each plugin using the `--info` argument:
 
@@ -121,7 +121,7 @@ python gettext_translator.py --info --backend azure
 }
 </pre>
 
-See the README.md files in each plugin's directory under ```translators/``` for more information about the options.
+See the README.md files in each plugin's directory under ```translators/``` for more information about the options supported by each plugin.
 
 ## Architecture
 
