@@ -9,7 +9,7 @@
 
 This program uses several cloud and local AI models to translate [gettext](https://www.gnu.org/software/gettext/) [PO](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html) files.
 
-## Backends and how to use
+## Backends
 
 To use `gettext-translator` as a command-line tool, see the `README.md` file in each plugin's directory for examples:
 
