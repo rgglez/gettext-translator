@@ -89,8 +89,8 @@ class TranslatorMarianMT(TranslatorService):
                     }
 
                     # Add msgctxt if context exists
-                    if "ctx" in entry and entry["ctx"]:
-                        result["msgctxt"] = entry["ctx"]
+                    if "ctx" in entry or len(self.config.context) > 0:
+                        result["msgctxt"] = entry["ctx"] if "ctx" in entry else self.config.context
 
                     translated_texts.append(result)
                 # for

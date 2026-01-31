@@ -49,7 +49,7 @@ class TranslatorChatGPT(TranslatorService):
                             self.config.apikey = yaml_file["apikey"]
 
                     except yaml.YAMLError as exc:
-                        print(exc)
+                        raise exc
             else:
                 raise Exception("[🚫] Configuration file not found")
     # __init__
@@ -139,10 +139,10 @@ The texts to translate follow:
             batch = texts_to_translate[i:i + batch_size]
 
             for text_entry in batch:
-                if "ctx" in text_entry:
+                if "ctx" in text_entry or len(self.config.context) > 0:
                     body.append({
                         'id': text_entry["id"],
-                        'ctx': text_entry["ctx"]
+                        'ctx': text_entry["ctx"] if "ctx" in text_entry else self.config.context
                     })
                 else:
                     body.append({

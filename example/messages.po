@@ -13,12 +13,16 @@ msgstr ""
 "X-Generator: Poedit 3.7\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
+#. AI-translated
 msgid "Hola <b>%s</b>, ganaste $%s"
-msgstr ""
+msgstr "Hallo <b>%s</b>, du hast $%s gewonnen"
 
-msgctxt "Money"
+#. AI-translated
+msgctxt "Payment"
 msgid "El abono ha sido aplicado a la cuenta en la moneda actual"
 msgstr ""
+"Die Gutschrift wurde auf das Konto in der aktuellen Währung angewendet"
 
+#. AI-translated
 msgid "--- seleccione su sexo ---"
-msgstr ""
+msgstr "--- wählen Sie Ihr Geschlecht ---"

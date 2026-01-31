@@ -32,8 +32,10 @@ The command line tool supports the following arguments:
 - ```--src```: The source language.
 - ```--dst```: The language to translate to.
 - ```--fuzzy```: Fuzzy translations?
+- ```--context```: Optional default translation context for msgid without msgctxt.
 - ```--ascribe```: Include a comment in each entry indicating that it was translated with AI.
 - ```--config```: Path to the YAML configuration file for the backend.
+- ```--verbose```: Show useful information. Possible values: debug, info, warning, error, critical. Default: warning.
 - ```--help```: Shows the help message.
 
 ### Examples

@@ -96,9 +96,10 @@ class TranslatorNLLB(TranslatorService):
                     print("[🚫] Input dictionary must contain 'id' field")
                     continue
 
-                if "ctx" in text_entry:
+                if "ctx" in text_entry or len(self.config.context):
                     # Combine context and text for better translation
-                    input_text = f"Context: {text_entry["ctx"]} Text: {text_entry["id"]}"
+                    context = text_entry["ctx"] if "ctx" in text_entry else self.config.context
+                    input_text = f"Context: {context} Text: {text_entry["id"]}"
                 else:
                     input_text = text_entry["id"]
                 # if

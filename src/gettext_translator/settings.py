@@ -74,6 +74,8 @@ class Settings(BaseSettings):
     src: str = Field(default=Language.make(language='en').language)
     dst: str = Field(default=Language.make(language='en').language)
     fuzzy: bool = Field(default=True)
+    context: str = Field(default="")
+    verbose: str = Field(default="warning")
     ascribe: bool = Field(default=False)
     config: str = Field(default="config.yaml")
 
@@ -102,7 +104,7 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
 
     @model_validator(mode='after')
-    def validar_info_backend(self) -> Self:
+    def validate_info_backend(self) -> Self:
         if self.info and not self.backend:
             raise ValueError("please tell me which backend do you want to see information about")
         return self
@@ -113,15 +115,26 @@ class Settings(BaseSettings):
     @classmethod
     def parse_cli_args(cls):
         parser = argparse.ArgumentParser()
-        parser.add_argument("--info", action='store_true', help="Shows information about the backend")
-        parser.add_argument("--backend", type=str, help="Which backend to use")
-        parser.add_argument("--po", type=str, help="The path to the .po file")
-        parser.add_argument("--src", type=str, default=Language.make(language='en').language, help="The source language")
-        parser.add_argument("--dst", type=str, help="The language to translate to")
-        parser.add_argument("--fuzzy", type=lambda x: x.lower() in ["true", "1", "yes"], help="Fuzzy translations?")
+        parser.add_argument("--info", action='store_true',
+                            help="Shows information about the backend")
+        parser.add_argument("--backend", type=str,
+                            help="Which backend to use")
+        parser.add_argument("--po", type=str,
+                            help="The path to the .po file")
+        parser.add_argument("--src", type=str, default=Language.make(language='en').language,
+                            help="The source language")
+        parser.add_argument("--dst", type=str,
+                            help="The language to translate to")
+        parser.add_argument("--fuzzy", type=lambda x: x.lower() in ["true", "1", "yes"],
+                            help="Fuzzy translations?")
+        parser.add_argument("--context", type=str, default="",
+                            help="Optional default translation context for msgid without msgctxt")
+        parser.add_argument("--verbose", type=lambda x: x.lower(), default="warning",
+                            help="Show useful information. Possible values: debug, info, warning, error, critical. Default: warning")
         parser.add_argument("--ascribe", default=False, type=lambda x: x.lower() in ["true", "1", "yes"],
                             help="Include a comment in each entry indicating that it was translated with AI")
-        parser.add_argument("--config", type=str, default="config.yaml", required=False, help="Path to the .yaml configuration file for the backend.")
+        parser.add_argument("--config", type=str, default="config.yaml", required=False,
+                            help="Path to the .yaml configuration file for the backend.")
         args = parser.parse_args()
         return args
     # parse_cli_args

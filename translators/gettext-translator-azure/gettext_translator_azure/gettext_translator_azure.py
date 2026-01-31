@@ -92,7 +92,7 @@ class TranslatorAzure(TranslatorService):
 
                     translated_texts.append({
                         "msgid": text_entry["id"],
-                        "msgctxt": text_entry["ctx"] if "ctx" in text_entry else "",
+                        "msgctxt": text_entry["ctx"] if "ctx" in text_entry else self.config.context if len(self.config.context) > 0 else "",
                         "msgstr": response[0]['translations'][0]['text']
                     })
                 else:

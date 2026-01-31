@@ -31,11 +31,8 @@ import sys
 import polib
 from translator_factory import TranslatorFactory
 from settings import Settings
+from logging_levels import LoggingLevels
 from pydantic import ValidationError
-
-# -------------------------------------------------------------------------
-
-logging.basicConfig(level=logging.INFO)
 
 # -------------------------------------------------------------------------
 
@@ -58,9 +55,11 @@ class GettextTranslator:
         try:
             po_file = polib.pofile(self.config.po)
 
-            fuzzy_entries = [entry for entry in po_file if 'fuzzy' in entry.flags]
-            for entry in fuzzy_entries:
-                entry.flags.remove('fuzzy')
+            # fuzzy_entries = [entry for entry in po_file if 'fuzzy' in entry.flags]
+            # for entry in fuzzy_entries:
+            #     entry.flags.remove('fuzzy')
+
+            [entry.flags.discard('fuzzy') for entry in po_file if 'fuzzy' in entry.flags]
 
             po_file.save(self.config.po)
             logging.info("[✔️] Fuzzy translations disabled in file: %s", self.config.po)
@@ -132,7 +131,7 @@ class GettextTranslator:
     def get_required_configuration(self):
         """
         Shows the required configuration options to be passed
-        in --plugin_options as a JSON.
+        in the YAML configuration file.
         """
         caps = self.service.get_required_configuration()
         print(json.dumps(caps, indent=2))
@@ -149,6 +148,9 @@ if __name__ == "__main__":
     except ValidationError as e:
         print(e)
         sys.exit(1)
+
+    # Configure logging
+    logging.basicConfig(level=LoggingLevels.get(settings.verbose))
 
     # Load the translation backend
     translator = GettextTranslator(TranslatorFactory().create_translator(settings))
