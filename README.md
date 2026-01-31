@@ -123,7 +123,7 @@ python gettext_translator.py --info --backend azure
 }
 </pre>
 
-See the README.md files in each plugin's directory under ```translators/``` for more information about the options supported by each plugin.
+See the ```README.md``` and sample YAML configuration files in each plugin's directory under ```translators/``` for more information about the options supported by each plugin.
 
 ## Architecture
 
