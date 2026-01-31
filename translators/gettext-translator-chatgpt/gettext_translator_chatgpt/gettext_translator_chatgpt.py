@@ -70,12 +70,11 @@ class TranslatorChatGPT(TranslatorService):
     def validate_openai_connection(self):
         """Validates the OpenAI connection by making a test API call."""
         try:
-            test_message = {"role": "system", "content": "Test message."}
-            self.client.chat.completions.create(model=self.config.model, messages=[test_message])
-            logging.info("[✔️] OpenAI connection validated successfully.")
+            self.client.models.list()
+            logging.info("[✔️] Valid connection to OpenAI API (using list_models).")
             return True
-        except Exception as e:  # pylint: disable=W0718
-            logging.error("[☠️] Failed to validate OpenAI connection: %s", e)
+        except Exception as e:
+            logging.error("[☠️] Connection error to OpenAI API: %s", e)
             return False
     # validate_openai_connection
 
@@ -83,18 +82,19 @@ class TranslatorChatGPT(TranslatorService):
 
     def perform_translation(self, translation_request):
         """Takes a translation request and appends the translated texts to the translated_texts list."""
-        message = {"role": "user", "content": translation_request}
-        logging.debug("[ℹ️] Translation request: %s", translation_request)
-        completion = self.client.chat.completions.create(model=self.config.model, messages=[message])
-
-        response = completion.choices[0].message.content.strip()
-
-        logging.info("[ℹ️] Raw API response: %s", response)
-
         try:
+            message = {"role": "user", "content": translation_request}
+
+            logging.debug("[ℹ️] Translation request: %s", translation_request)
+
+            completion = self.client.chat.completions.create(model=self.config.model, messages=[message])
+            response = completion.choices[0].message.content.strip()
+
+            logging.info("[ℹ️] Raw API response: %s", response)
+
             result = json.loads(response)
         except Exception as e:
-            logging.error("[☠️] Failed to translate batch: %s", e)
+            logging.error("[☠️] Failed to translate: %s", e)
             return []
 
         return result
