@@ -90,7 +90,7 @@ class TranslatorChatGPT(TranslatorService):
             completion = self.client.chat.completions.create(model=self.config.model, messages=[message])
             response = completion.choices[0].message.content.strip()
 
-            logging.info("[ℹ️] Raw API response: %s", response)
+            logging.debug("[ℹ️] Raw API response: %s", response)
 
             result = json.loads(response)
         except Exception as e:

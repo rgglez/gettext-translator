@@ -11,7 +11,8 @@ readme = "README.md"
 license = { text = "GPL 3.0" }
 dependencies = [
     "gettext-translator-service>=0.0.1",
-    "openai==1.99.9"
+    "openai==1.99.9",
+    "language_data"
 ]
 
 [project.entry-points."gettext_translator_service.plugins"]
