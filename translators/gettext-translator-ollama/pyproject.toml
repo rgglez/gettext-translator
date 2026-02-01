@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gettext-translator-ollama"
+version = "0.0.1"
+description = "Ollama implementation for translator-service"
+authors = [{ name="Rodolfo González González", email="code@rodolfo.gg" }]
+readme = "README.md"
+license = { text = "GPL 3.0" }
+dependencies = [
+    "gettext-translator-service>=0.0.1",
+    "ollama"
+]
+
+[project.entry-points."gettext_translator_service.plugins"]
+ollama = "gettext_translator_ollama:TranslatorOllama"

@@ -1,0 +1,2 @@
+gettext_translator_service
+ollama
