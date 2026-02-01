@@ -17,8 +17,9 @@ Currently this system works with the following backends:
 
 - **Azure AI Translator** ([README](translators/gettext-translator-azure/README.md)): remote API, commercial, API key required.
 - **OpenAI ChatGPT** ([README](translators/gettext-translator-chatgpt/README.md)): remote API, several models, commercial, API key required.
-- **MarianMT** ([README](translators/gettext-translator-marianmt/README.md)): local *Helsinki-NLP* model, free, auth token might be required.
-- **NLLB** ([README](translators/gettext-translator-nllb/README.md)): local model, free, auth token might be required.
+- **MarianMT** ([README](translators/gettext-translator-marianmt/README.md)): local HuggingFace *Helsinki-NLP* model, free, auth token might be required.
+- **NLLB** ([README](translators/gettext-translator-nllb/README.md)): local HuggingFace model, free, auth token might be required.
+- **Ollama** ([README](translators/gettext-translator-ollama/README.md)): self-hosted (by yourself) Ollama server running free models.
 
 Please remember: refer to each plugin's `README.md` files listed above to view information about each plugin.
 
