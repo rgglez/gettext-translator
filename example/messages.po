@@ -14,11 +14,12 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 
 msgid "Hola <b>%s</b>, ganaste $%s"
-msgstr ""
+msgstr "Hallo <b>%s</b>, Sie haben $%s gewonnen"
 
 msgctxt "Pago"
 msgid "El abono ha sido aplicado a la cuenta en la moneda actual"
 msgstr ""
+"Der Gutschrift wurde auf das Konto in der aktuellen Währung angewendet"
 
 msgid "--- seleccione su sexo ---"
-msgstr ""
+msgstr "--- wählen Sie Ihren Geschlecht ---"
