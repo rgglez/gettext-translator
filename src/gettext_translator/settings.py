@@ -125,13 +125,13 @@ class Settings(BaseSettings):
                             help="The source language")
         parser.add_argument("--dst", type=str,
                             help="The language to translate to")
-        parser.add_argument("--fuzzy", type=lambda x: x.lower() in ["true", "1", "yes"],
+        parser.add_argument("--fuzzy", action='store_true',
                             help="Fuzzy translations?")
         parser.add_argument("--context", type=str, default="",
                             help="Optional default translation context for msgid without msgctxt")
         parser.add_argument("--verbose", type=lambda x: x.lower(), default="warning",
                             help="Show useful information. Possible values: debug, info, warning, error, critical. Default: warning")
-        parser.add_argument("--ascribe", default=False, type=lambda x: x.lower() in ["true", "1", "yes"],
+        parser.add_argument("--ascribe", action='store_true',
                             help="Include a comment in each entry indicating that it was translated with AI")
         parser.add_argument("--config", type=str, default="config.yaml", required=False,
                             help="Path to the .yaml configuration file for the backend.")
