@@ -84,6 +84,7 @@ class TranslatorService(ABC):
         print("\n")
         print("=" * 80)
         print("Required options for the YAML configuration file:")
+        print("=" * 80)
         print("\n")
 
         meta = {}
