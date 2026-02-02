@@ -27,5 +27,5 @@ class TranslatorFactory:
             impl_cls = plugins[settings.backend]
             return impl_cls(settings)
         else:
-            raise ValueError("Unknown translation backend")
+            raise ValueError("❌ Unknown translation backend")
 # TranslatorFactory

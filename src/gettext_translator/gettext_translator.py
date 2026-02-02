@@ -25,7 +25,6 @@ It is designed to handle both bulk and individual translation modes.
 
 # -------------------------------------------------------------------------
 
-import json
 import logging
 import sys
 import polib
@@ -42,7 +41,7 @@ class GettextTranslator:
         self.service = service
         self.config = service.config
 
-        if not self.config.info and self.config.fuzzy:
+        if self.config.fuzzy and not self.config.info:
             self.disable_fuzzy_translations()
     # __init__
 
@@ -62,6 +61,7 @@ class GettextTranslator:
             [entry.flags.discard('fuzzy') for entry in po_file if 'fuzzy' in entry.flags]
 
             po_file.save(self.config.po)
+
             logging.info("[✔️] Fuzzy translations disabled in file: %s", self.config.po)
         except Exception as e:  # pylint: disable=W0718
             logging.error("[💣] Error while disabling fuzzy translations in file %s: %s", self.config.po, e)
@@ -125,17 +125,6 @@ class GettextTranslator:
         except Exception as e:  # pylint: disable=W0718
             logging.error("[☠️] Error processing file %s: %s", self.config.po, e)
     # process_po_file
-
-    # -------------------------------------------------------------------------
-
-    def get_required_configuration(self):
-        """
-        Shows the required configuration options to be passed
-        in the YAML configuration file.
-        """
-        caps = self.service.get_required_configuration()
-        print(json.dumps(caps, indent=2))
-    # get_required_configuration
 # GettextTranslator
 
 # -----------------------------------------------------------------------------
@@ -153,11 +142,12 @@ if __name__ == "__main__":
     logging.basicConfig(level=LoggingLevels.get(settings.verbose))
 
     # Load the translation backend
-    translator = GettextTranslator(TranslatorFactory().create_translator(settings))
+    backend = TranslatorFactory().create_translator(settings)
+    translator = GettextTranslator(backend)
 
-    # Just show the info for the given --backend and exit
+    # Shows the info for the given --backend and exit
     if cli_args.info:
-        translator.get_required_configuration()
+        backend.show_info()
         sys.exit(0)
 
     # Translate!

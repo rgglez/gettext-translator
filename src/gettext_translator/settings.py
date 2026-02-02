@@ -87,7 +87,7 @@ class Settings(BaseSettings):
         if info.data.get('info'):
             return v  # Skip validation if info is present
         if not v:
-            raise ValueError('po must be provided unless --info are used.')
+            raise ValueError('po must be provided unless --info or --readme are used.')
         return v
     # validate_po
 
@@ -108,7 +108,7 @@ class Settings(BaseSettings):
         if self.info and not self.backend:
             raise ValueError("please tell me which backend do you want to see information about")
         return self
-    # validar_info_backend
+    # validate_info_backend
 
     # -------------------------------------------------------------------------
 
