@@ -42,7 +42,7 @@ Currently the most balanced model for translation and general tasks:
 If you are looking for maximum grammatical precision, Google released specific variants within the Gemma 3 family.
 
 * For most PCs: **translategemma:12b**
-* For lightweight devices (laptops): **ollama run **translategemma:4b**
+* For lightweight devices (laptops): **translategemma:4b**
 * Maximum quality (Requires +24GB VRAM): **translategemma:27b**
 
 ### 3. The Meta "All-Rounder"
