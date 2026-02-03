@@ -25,6 +25,7 @@ See the `README.md` file in each plugin's directory for examples and information
 
 - **Azure AI Translator** ([README](translators/gettext-translator-azure/README.md)): remote API, commercial, API key required.
 - **OpenAI ChatGPT** ([README](translators/gettext-translator-chatgpt/README.md)): remote API, several models, commercial, API key required.
+- **Google Gemini** ([README](translators/gettext-translator-gemini/README.md)): remote API, several models, commercial with a free layer, API key required.
 - **MarianMT** ([README](translators/gettext-translator-marianmt/README.md)): local HuggingFace *Helsinki-NLP* model, free, auth token might be required.
 - **NLLB** ([README](translators/gettext-translator-nllb/README.md)): local HuggingFace *NLLB* model, free, auth token might be required.
 - **Ollama** ([README](translators/gettext-translator-ollama/README.md)): self-hosted (by yourself) Ollama server running free models.
@@ -45,12 +46,26 @@ The command line tool supports the following arguments:
 - ```--verbose```: Show useful information. Possible values: debug, info, warning, error, critical. Default: warning.
 - ```--help```: Shows the help message.
 
-### Examples
+### Per backend configuration
+
+To avoid cluttering of the command line arguments, each backend has its own configuration file, in YAML format. This file contains the backend's-specific options, as described in each plugin's `README.md` file. Please refer to those files (linked above), or use the `--info` argument todisplay the `README.md` and list the available options for each backend (view usage example below).
+
+You must specify the path to the configuration file using the `--config` argument.
+
+A sample configuration file for each backend is provided in each plugin's directory, under `translators/gettext-translator-<backend>/<backend>-sample.yaml`.
+
+## Usage examples
 
 First, change to the `src/gettext_translator` directory:
 
 ```bash
 cd src/gettext_translator/
+```
+
+You can view the README file for the plugin and which options are available for it using the `--info` argument:
+
+```bash
+python gettext_translator.py --info --backend chatgpt
 ```
 
 Show information about the ChatGPT backend:
@@ -70,16 +85,6 @@ Translate using the ChatGPT backend, adding a comment attributing translations t
 ```bash
 python gettext_translator.py --backend chatgpt --src es --dst de_DE --config ../../translators/gettext-translator-chatgpt/chatgpt-sample.yaml --po ../../example/messages.po --ascribe=true
 ```
-
-You can view the README file for the plugin and which options are available for it using the `--info` argument:
-
-```bash
-python gettext_translator.py --info --backend chatgpt
-```
-
-## Configuration
-
-See the ```README.md``` and sample YAML configuration files in each plugin's directory under ```translators/``` for more information about the options supported by each plugin.
 
 ## Requirements
 
