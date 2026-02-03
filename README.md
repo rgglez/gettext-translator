@@ -9,9 +9,19 @@
 
 This program uses several cloud and local AI models to translate [gettext](https://www.gnu.org/software/gettext/) [PO](https://www.gnu.org/software/gettext/manual/html_node/PO-Files.html) files.
 
+## Features
+
+* Supports several backends, both local HuggingFace models, self-hosted Ollama, and remote API services.
+* Extensible. You can write your own translation plugins.
+* Supports fuzzy translations.
+* Supports automatic translation of missing entries.
+* Supports tagging of AI-generated translations.
+* Supports automatic detection of language.
+* Supports msgctxt field for better contextual translation.
+
 ## Backends
 
-See the `README.md` file in each plugin’s directory for examples and information about the backends. Currently this system works with the following backends:
+See the `README.md` file in each plugin's directory for examples and information about the backends. Currently this system works with the following backends:
 
 - **Azure AI Translator** ([README](translators/gettext-translator-azure/README.md)): remote API, commercial, API key required.
 - **OpenAI ChatGPT** ([README](translators/gettext-translator-chatgpt/README.md)): remote API, several models, commercial, API key required.
