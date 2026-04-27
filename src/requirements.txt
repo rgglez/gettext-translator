@@ -1,7 +1,8 @@
 polib==1.2.0
-pydantic==2.11.7
-pydantic_settings==2.10.1
-pytest==8.4.1
-PyYAML==6.0.2
+pydantic==2.13.3
+pydantic_settings==2.14.0
+pytest==9.0.3
+PyYAML==6.0.3
 gettext_translator_service==0.0.1
 langcodes
+requests>=2.33.1
