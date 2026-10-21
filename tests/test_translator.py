@@ -161,3 +161,16 @@ def test_missing_required_config(tmp_path):
 def test_installed_plugins_load():
     for name, cls in load_plugins().items():
         assert issubclass(cls, TranslatorService), name
+
+
+def test_missing_config_file(tmp_path, monkeypatch):
+    from gettext_translator import translator_factory
+
+    class NeedsKey(FakeService):
+        REQUIRES_CONFIG = ["apikey"]
+
+    monkeypatch.setattr(translator_factory, "load_plugins", lambda: {"fake": NeedsKey})
+    settings = Settings(po=["a.po"], backend="fake", config=str(tmp_path / "none.yaml"))
+
+    with pytest.raises(ValueError, match="not found"):
+        translator_factory.TranslatorFactory().create_translator(settings)

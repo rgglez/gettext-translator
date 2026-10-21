@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from pathlib import Path
+
 from gettext_translator_service import load_plugins
 
 
@@ -25,6 +27,8 @@ class TranslatorFactory:
         plugins = load_plugins()
         if settings.backend in plugins:
             impl_cls = plugins[settings.backend]
+            if impl_cls.REQUIRES_CONFIG and not settings.info and not Path(settings.config).is_file():
+                raise ValueError(f"❌ Configuration file {settings.config} not found, use --config")
             return impl_cls(settings)
         else:
             installed = ', '.join(plugins) or 'none'

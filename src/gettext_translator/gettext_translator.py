@@ -37,7 +37,6 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from .cache import TranslationCache
 from .settings import Settings
 from .translator_factory import TranslatorFactory
 
@@ -291,6 +290,8 @@ def main(argv=None) -> int:
 
         cache = None
         if settings.cache:
+            # Imported here because some Python builds lack sqlite3, which is only needed for --cache
+            from .cache import TranslationCache
             scope = (settings.backend, str(getattr(settings, "model", "")), str(settings.src), str(settings.dst))
             cache = TranslationCache(settings.cache, scope)
 
