@@ -18,6 +18,7 @@
 
 
 from .base import TranslatorService
+from .helpers import parse_json_response, translate_llm, translate_plain
 from .utils import load_plugins
 
-__all__ = ["TranslatorService", "load_plugins"]
+__all__ = ["TranslatorService", "load_plugins", "parse_json_response", "translate_llm", "translate_plain"]

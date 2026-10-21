@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gettext-translator"
+dynamic = ["version"]
+description = "Translate gettext .po files using cloud services and local AI models."
+authors = [{ name = "Rodolfo González González", email = "code@rodolfo.gg" }]
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.12"
+keywords = ["gettext", "po", "translation", "i18n", "l10n", "llm"]
+classifiers = [
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Internationalization",
+    "Topic :: Software Development :: Localization",
+]
+dependencies = [
+    "gettext-translator-service>=0.1,<0.2",
+    "polib>=1.2",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.4",
+    "PyYAML>=6",
+    "langcodes>=3.4",
+    "rich>=13",
+]
+
+[project.optional-dependencies]
+azure = ["gettext-translator-azure>=0.1,<0.2"]
+chatgpt = ["gettext-translator-chatgpt>=0.1,<0.2"]
+gemini = ["gettext-translator-gemini>=0.1,<0.2"]
+marianmt = ["gettext-translator-marianmt>=0.1,<0.2"]
+nllb = ["gettext-translator-nllb>=0.1,<0.2"]
+ollama = ["gettext-translator-ollama>=0.1,<0.2"]
+all = ["gettext-translator[azure,chatgpt,gemini,marianmt,nllb,ollama]"]
+
+[project.scripts]
+gettext-translator = "gettext_translator.gettext_translator:main"
+
+[project.urls]
+Homepage = "https://github.com/rgglez/gettext-translator"
+Issues = "https://github.com/rgglez/gettext-translator/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "gettext_translator.version.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]

@@ -1,19 +1,23 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gettext-translator-azure"
-version = "0.0.1"
-description = "Azure implementation for translator-service"
-authors = [{ name="Rodolfo González González", email="code@rodolfo.gg" }]
+version = "0.1.0"
+description = "Azure AI Translator backend for gettext-translator"
+authors = [{ name = "Rodolfo González González", email = "code@rodolfo.gg" }]
 readme = "README.md"
-license = { text = "GPL 3.0" }
+license = "GPL-3.0-or-later"
+requires-python = ">=3.12"
 dependencies = [
-    "gettext-translator-service>=0.0.1",
+    "gettext-translator-service>=0.1,<0.2",
     "requests>=2.33.1",
-    "rich==14.1.0"
 ]
+
+[project.urls]
+Homepage = "https://github.com/rgglez/gettext-translator"
+Issues = "https://github.com/rgglez/gettext-translator/issues"
 
 [project.entry-points."gettext_translator_service.plugins"]
 azure = "gettext_translator_azure:TranslatorAzure"

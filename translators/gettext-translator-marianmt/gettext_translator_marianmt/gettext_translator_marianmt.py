@@ -16,11 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import traceback
-
-from gettext_translator_service import TranslatorService
+from gettext_translator_service import TranslatorService, translate_plain
 from transformers import MarianMTModel, MarianTokenizer
-from rich.pretty import pprint
 
 # -----------------------------------------------------------------------------
 
@@ -28,12 +25,6 @@ from rich.pretty import pprint
 class TranslatorMarianMT(TranslatorService):
     # Configuration options required
     REQUIRES_CONFIG: list[str] = []
-
-    # -------------------------------------------------------------------------
-
-    def __init__(self, settings) -> None:
-        self.config = settings
-    # __init__
 
     # -------------------------------------------------------------------------
 
@@ -49,58 +40,33 @@ class TranslatorMarianMT(TranslatorService):
 
     # -------------------------------------------------------------------------
 
-    def translate(self, texts_to_translate):
-        try:
-            self.configure()
+    def translate_strings(self, strings):
+        batch_size = 100
 
-            batch_size = 100
+        translated = []
+        for i in range(0, len(strings), batch_size):
+            batch = strings[i:i + batch_size]
 
-            translated_texts = []
+            # Tokenize the batch (padding + truncation for uniformity, 512 is the model limit)
+            inputs = self.tokenizer(
+                [string["id"] for string in batch],
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=512
+            )
 
-            for i in range(0, len(texts_to_translate), batch_size):
-                batch = texts_to_translate[i:i + batch_size]
+            # Generate and decode the translations
+            outputs = self.model.generate(**inputs)
+            translated += self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+        # for
 
-                # Extract texts for translation
-                texts_for_translation = [entry["id"] for entry in batch]
+        return translated
+    # translate_strings
 
-                # Tokenize the batch (padding + truncation for uniformity)
-                inputs = self.tokenizer(
-                    texts_for_translation,
-                    return_tensors="pt",
-                    padding=True,
-                    truncation=True,
-                    max_length=1024  # Adjust based on your needs
-                )
+    # -------------------------------------------------------------------------
 
-                # Generate translations
-                outputs = self.model.generate(**inputs)
-
-                # Decode the batch
-                translated_batch = self.tokenizer.batch_decode(
-                    outputs,
-                    skip_special_tokens=True
-                )
-
-                # Create dictionary entries with msgid, msgstr, and optional msgctxt
-                for entry, translated in zip(batch, translated_batch):
-                    result = {
-                        "msgid": entry["id"],
-                        "msgstr": translated
-                    }
-
-                    # Add msgctxt if context exists
-                    if "ctx" in entry or len(self.config.context) > 0:
-                        result["msgctxt"] = entry["ctx"] if "ctx" in entry else self.config.context
-
-                    translated_texts.append(result)
-                # for
-            # for
-
-            return translated_texts
-
-        except Exception as e:  # pylint: disable=W0718
-            pprint(e)
-            traceback.print_stack()
-            return []
+    def translate(self, items):
+        return translate_plain(items, self.translate_strings)
     # translate
 # TranslatorMarianMT

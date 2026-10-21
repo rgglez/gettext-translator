@@ -17,9 +17,9 @@
 """
 
 from abc import ABC, abstractmethod
+import importlib.metadata
 import inspect
 import json
-from pathlib import Path
 from rich.console import Console
 from rich.markdown import Markdown
 
@@ -27,70 +27,62 @@ from rich.markdown import Markdown
 
 
 class TranslatorService(ABC):
-    REQUIRES_CONFIG: list[str]
+    """
+    Base class for translation backends.
+
+    Contract of translate():
+
+    Input: a list of items, one per unique string to translate:
+        {"n": int, "id": str, "ctx": str (optional),
+         "plural": str (optional), "nplurals": int (present when "plural" is)}
+
+    Output: a list of results, in any order, each one referring to its item by "n":
+        {"n": int, "msgstr": str}                  for items without "plural"
+        {"n": int, "msgstr_plural": [str, ...]}    for items with "plural", nplurals forms
+
+    Items that cannot be translated may be omitted from the output.
+    """
+
+    # Options that must be present in the YAML configuration file
+    REQUIRES_CONFIG: list[str] = []
 
     # -------------------------------------------------------------------------
 
-    @abstractmethod
-    def __init__(self) -> None:
-        pass
+    def __init__(self, settings) -> None:
+        self.config = settings
+
+        if not settings.info:
+            missing = [k for k in self.REQUIRES_CONFIG if getattr(settings, k, None) in (None, "")]
+            if missing:
+                raise ValueError(f"Missing option(s) {', '.join(missing)} in configuration file {settings.config}")
     # __init__
 
     # -------------------------------------------------------------------------
 
-    @abstractmethod
     def configure(self):
-        pass
+        """Connects to the service or loads the model. Called once before translate()."""
     # configure
 
     # -------------------------------------------------------------------------
 
     @abstractmethod
-    def translate(self, texts):
-        '''Translates one or more strings, depending on the backend'''
-        pass
+    def translate(self, items: list[dict]) -> list[dict]:
+        """Translates the items, see the class docstring for the contract."""
     # translate
 
     # -------------------------------------------------------------------------
 
     @classmethod
     def show_info(cls):
-        print("\n")
-        print("=" * 80)
-        print("README file for the plugin:")
-        print("=" * 80)
-        print("\n")
+        """Renders the README of the plugin (from its package metadata) and its required options."""
+        module = inspect.getmodule(cls).__name__.split(".")[0]
+        dists = importlib.metadata.packages_distributions().get(module, [])
+        readme = importlib.metadata.metadata(dists[0]).get_payload() if dists else ""
 
-        """Reads and renders the README.md for the plugin"""
-        # Get the file where the caller class (cls) is defined
-        class_file = inspect.getfile(cls)
-        readme_path = Path(class_file).parent.parent / "README.md"
-
-        # Check if file exists
-        if not readme_path.exists():
-            print(f"❌ README.md not found in: {readme_path}")
-            return
-
-        # Read the README
-        contents = readme_path.read_text(encoding='utf-8')
-
-        # Rich console
         console = Console()
-
-        # Render the Markdown
-        md = Markdown(contents)
-        console.print(md)
-
-        print("\n")
-        print("=" * 80)
-        print("Required options for the YAML configuration file:")
-        print("=" * 80)
-        print("\n")
-
-        meta = {}
-        for name, typ in cls.__annotations__.items():
-            value = getattr(cls, name, None)
-            meta[name] = value
-        print(json.dumps(meta, indent=2))
+        console.rule("README file for the plugin")
+        console.print(Markdown(readme) if readme else f"❌ No README found for {module}")
+        console.rule("Required options for the YAML configuration file")
+        console.print(json.dumps(cls.REQUIRES_CONFIG, indent=2))
     # show_info
 # TranslatorService

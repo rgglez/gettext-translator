@@ -1,18 +1,23 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gettext-translator-gemini"
-version = "0.0.1"
-description = "Gemini API implementation for translator-service"
-authors = [{ name="Rodolfo González González", email="code@rodolfo.gg" }]
+version = "0.1.0"
+description = "Google Gemini backend for gettext-translator"
+authors = [{ name = "Rodolfo González González", email = "code@rodolfo.gg" }]
 readme = "README.md"
-license = { text = "GPL 3.0" }
+license = "GPL-3.0-or-later"
+requires-python = ">=3.12"
 dependencies = [
-    "gettext-translator-service>=0.0.1",
-    "google-genai"
+    "gettext-translator-service>=0.1,<0.2",
+    "google-genai>=1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/rgglez/gettext-translator"
+Issues = "https://github.com/rgglez/gettext-translator/issues"
 
 [project.entry-points."gettext_translator_service.plugins"]
 gemini = "gettext_translator_gemini:TranslatorGemini"

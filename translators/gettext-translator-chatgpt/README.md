@@ -1,14 +1,14 @@
 # gettext-translator-chatgpt
 
-ChatGPT API implementation for `gettext-translator-service`.
+ChatGPT API backend for [gettext-translator](https://github.com/rgglez/gettext-translator).
 
 ## Usage from gettext-translator
 
 ```bash
-python gettext_translator.py --backend chatgpt --config sample-chatgpt.yaml --src en --dst fr_CA --po /path/to/example/messages.po
+gettext-translator --backend chatgpt --config sample-chatgpt.yaml --src en --dst fr_CA --po /path/to/example/messages.po
 ```
 
-This command translates the `messages.po` file from English into Canadian French (fr_CA), using the provided OpenAI API key, using the `gpt-4o-mini` model processesing 100 translations per batch. Very good results are produced by this model, which is a cheap one. See the [chatgpt-sample.yaml](chatgpt-sample.yaml) configuration file for the example.
+This command translates the `messages.po` file from English into Canadian French (fr_CA), using the provided OpenAI API key, using the `gpt-4o-mini` model processing 100 translations per batch. Very good results are produced by this model, which is a cheap one. See the [chatgpt-sample.yaml](chatgpt-sample.yaml) configuration file for the example.
 
 ## Configuration
 
@@ -17,15 +17,10 @@ This command translates the `messages.po` file from English into Canadian French
   - Or, if you prefix the string with "env:", the value of the environment variable with the same name will be used. Example: apikey="env:MY_OPENAI_API_KEY" and then in the shell ```export MY_OPENAI_API_KEY="sk-..."```.
 * `model` the model you want to use. See the Notes below.
 
-## Loading the plugin
+## Installation
 
-```python
-from gettext_translator_service import load_plugins
-
-plugins = load_plugins()
-impl_cls = plugins["TranslatorChatGPT"]
-impl = impl_cls()
-impl.connect()
+```bash
+pip install "gettext-translator[chatgpt]"
 ```
 
 ## Notes

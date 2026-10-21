@@ -1,11 +1,11 @@
 # gettext-translator-azure
 
-Azure AI Translator implementation for `gettext-translator-service`.
+Azure AI Translator backend for [gettext-translator](https://github.com/rgglez/gettext-translator).
 
 ## Usage from gettext-translator
 
 ```bash
-python gettext_translator.py --backend azure --config azure-sample.yaml --src en --dst es_MX --po /path/to/example/messages.po
+gettext-translator --backend azure --config azure-sample.yaml --src en --dst es_MX --po /path/to/example/messages.po
 ```
 
 This command translates the `messages.po` file from English into Mexican Spanish (es_MX), using the provided Azure AI Translator key in the `westus3` location. See the [azure-sample.yaml](azure-sample.yaml) configuration file for the example.
@@ -18,19 +18,15 @@ This command translates the `messages.po` file from English into Mexican Spanish
 * `location` the location of the translation service.
 * `endpoint` the endpoint of the translation service.
 
-## Loading the plugin
+## Installation
 
-```python
-from gettext_translator_service import load_plugins
-
-plugins = load_plugins()
-impl_cls = plugins["TranslatorAzure"]
-impl = impl_cls()
-impl.connect()
+```bash
+pip install "gettext-translator[azure]"
 ```
 
 ## Notes
 
+- Plural forms: this backend translates the singular and the plural `msgid` separately and uses the plural translation for every form except the first one. That is right for languages with two plural forms; for languages with more (Russian, Polish, Arabic...) use an LLM backend.
 - You can find information about Microsoft Azure AI Translator [here](https://learn.microsoft.com/en-us/azure/ai-services/translator/overview).
 
 

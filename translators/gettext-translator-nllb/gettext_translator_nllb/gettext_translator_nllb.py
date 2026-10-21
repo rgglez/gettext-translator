@@ -16,15 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import traceback
-
-import yaml
-import torch
+import logging
 import warnings
-import os
-from rich.pretty import pprint
+
+import torch
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from gettext_translator_service import TranslatorService
+from gettext_translator_service import TranslatorService, translate_plain
 
 warnings.filterwarnings("ignore")
 
@@ -41,23 +38,6 @@ nllb-200-3.3B (best quality, requires more memory)
 class TranslatorNLLB(TranslatorService):
     # Configuration options required
     REQUIRES_CONFIG: list[str] = ["model"]
-
-    # -------------------------------------------------------------------------
-
-    def __init__(self, settings) -> None:
-        self.config = settings
-
-        if not self.config.info:
-            if os.path.exists(self.config.config):
-                with open(self.config.config) as stream:
-                    try:
-                        yaml_file = yaml.safe_load(stream)
-                        self.config.model = yaml_file["model"]
-                    except yaml.YAMLError as exc:
-                        print(exc)
-            else:
-                raise Exception("[🚫] Configuration file not found")
-    # __init__
 
     # -------------------------------------------------------------------------
 
@@ -83,71 +63,55 @@ class TranslatorNLLB(TranslatorService):
 
     # -------------------------------------------------------------------------
 
-    def translate(self, texts_to_translate):
-        try:
-            self.configure()
+    def translate_strings(self, strings):
+        translated = []
+        total = len(strings)
 
-            translated_texts = []
-            i = 0
-            total = len(texts_to_translate)
+        for i, string in enumerate(strings, 1):
+            if "ctx" in string:
+                # Combine context and text for better translation
+                input_text = f"Context: {string['ctx']} Text: {string['id']}"
+            else:
+                input_text = string["id"]
+            # if
 
-            for text_entry in texts_to_translate:
-                if 'id' not in text_entry:
-                    print("[🚫] Input dictionary must contain 'id' field")
-                    continue
+            # Tokenize with source language specification
+            self.tokenizer.src_lang = self.src_lang
+            inputs = self.tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
+            inputs = inputs.to(self.device)
 
-                if "ctx" in text_entry or len(self.config.context):
-                    # Combine context and text for better translation
-                    context = text_entry["ctx"] if "ctx" in text_entry else self.config.context
-                    input_text = f"Context: {context} Text: {text_entry["id"]}"
-                else:
-                    input_text = text_entry["id"]
-                # if
+            logging.info("[📝 %d/%d] %s", i, total, input_text)
 
-                # Tokenize with source language specification
-                self.tokenizer.src_lang = self.src_lang
-                inputs = self.tokenizer(input_text, return_tensors="pt", padding=True, truncation=True)
-                inputs = inputs.to(self.device)
+            # Generate translation. 512 is the maximum token length of the model
+            with torch.no_grad():
+                generated_tokens = self.model.generate(
+                    **inputs,
+                    forced_bos_token_id=self.tokenizer.convert_tokens_to_ids(self.dst_lang),
+                    max_length=512,
+                    num_beams=1,
+                    early_stopping=True
+                )
+            # with
 
-                i = i + 1
-                print(f"[📝 {i}/{total}] {input_text}", i, total, input_text)
+            # Decode the translation
+            translation = self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
 
-                # Generate translation. 512 is the maximun token length
-                with torch.no_grad():
-                    generated_tokens = self.model.generate(
-                        **inputs,
-                        forced_bos_token_id=self.tokenizer.convert_tokens_to_ids(self.dst_lang),
-                        max_length=50,
-                        num_beams=1,
-                        early_stopping=True
-                    )
-                # with
+            # Clean up the output if context was used
+            if "ctx" in string and ":" in translation:
+                # Find the actual text after the last colon
+                # This handles translated "Text:" labels in any language
+                translation = translation.split(":")[-1].strip()
+            # if
 
-                # Decode the translation
-                translation = self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
+            translated.append(translation)
+        # for
 
-                # Clean up the output if context was used
-                if "ctx" in text_entry and text_entry["ctx"] and ":" in translation:
-                    # Find the actual text after the last colon
-                    # This handles translated "Text:" labels in any language
-                    parts = translation.split(":")
-                    if len(parts) > 1:
-                        translation = parts[-1].strip()
-                    # if
-                # if
+        return translated
+    # translate_strings
 
-                result = {'msgid': text_entry["id"]}
-                result['msgstr'] = translation
-                if "ctx" in text_entry:
-                    result['msgctxt'] = text_entry["ctx"]
+    # -------------------------------------------------------------------------
 
-                translated_texts.append(result)
-            # for
-
-            return translated_texts
-        except Exception as e:  # pylint: disable=W0718
-            pprint(e)
-            traceback.print_stack()
-            return []
+    def translate(self, items):
+        return translate_plain(items, self.translate_strings)
     # translate
 # TranslatorNLLB

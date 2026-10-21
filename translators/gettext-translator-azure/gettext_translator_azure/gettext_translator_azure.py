@@ -16,15 +16,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import os
-import yaml
-import traceback
-import requests
-import uuid
 import logging
+import uuid
 
-from gettext_translator_service import TranslatorService
-from rich.pretty import pprint
+import requests
+from gettext_translator_service import TranslatorService, translate_plain
+
+# -----------------------------------------------------------------------------
+
+# The API accepts up to 1000 texts per request
+BATCH_SIZE = 100
 
 # -----------------------------------------------------------------------------
 
@@ -35,29 +36,8 @@ class TranslatorAzure(TranslatorService):
 
     # -------------------------------------------------------------------------
 
-    def __init__(self, settings) -> None:
-        self.config = settings
-
-        if not self.config.info:
-            if os.path.exists(self.config.config):
-                with open(self.config.config) as stream:
-                    try:
-                        yaml_file = yaml.safe_load(stream)
-                        self.config.location = yaml_file["location"]
-                        self.config.endpoint = yaml_file["endpoint"]
-                        if "env:" in yaml_file["apikey"]:
-                            self.config.apikey = os.getenv(yaml_file["apikey"].replace("env:", ""))
-                        else:
-                            self.config.apikey = yaml_file["apikey"]
-
-                    except yaml.YAMLError as exc:
-                        print(exc)
-    # __init__
-
-    # -------------------------------------------------------------------------
-
     def configure(self):
-        self.constructed_url = self.config.endpoint + '/translate'
+        self.constructed_url = self.config.endpoint.rstrip('/') + '/translate'
         self.params = {
             'api-version': '3.0',
             'from': self.config.src.language,
@@ -75,35 +55,28 @@ class TranslatorAzure(TranslatorService):
 
     # -------------------------------------------------------------------------
 
-    def translate(self, texts_to_translate):
-        try:
-            self.configure()
+    def translate_strings(self, strings):
+        translated = []
+        for i in range(0, len(strings), BATCH_SIZE):
+            batch = strings[i:i + BATCH_SIZE]
+            body = [{'text': string["id"]} for string in batch]
 
-            translated_texts = []
-            for text_entry in texts_to_translate:
-                body = []
-                body.append({
-                    'text': text_entry["id"]
-                })
+            try:
+                request = requests.post(self.constructed_url, params=self.params, headers=self.headers, json=body,
+                                        timeout=60)
+                request.raise_for_status()
+                translated += [response['translations'][0]['text'] for response in request.json()]
+            except Exception as e:  # pylint: disable=W0718
+                logging.warning("[🤐] Request to Azure service failed for %d strings: %s", len(batch), e)
+                translated += [None] * len(batch)
+        # for
 
-                request = requests.post(self.constructed_url, params=self.params, headers=self.headers, json=body)
-                if request.status_code == 200:
-                    response = request.json()
+        return translated
+    # translate_strings
 
-                    translated_texts.append({
-                        "msgid": text_entry["id"],
-                        "msgctxt": text_entry["ctx"] if "ctx" in text_entry else self.config.context if len(self.config.context) > 0 else "",
-                        "msgstr": response[0]['translations'][0]['text']
-                    })
-                else:
-                    logging.error("[🤐] Request to Azure service failed: %s", request.reason)
-            # for
+    # -------------------------------------------------------------------------
 
-            return translated_texts
-
-        except Exception as e:  # pylint: disable=W0718
-            pprint(e)
-            traceback.print_stack()
-            return []
+    def translate(self, items):
+        return translate_plain(items, self.translate_strings)
     # translate
 # TranslatorAzure

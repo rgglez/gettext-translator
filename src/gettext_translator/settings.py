@@ -20,6 +20,7 @@
 
 
 import argparse
+import os
 import yaml
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic_settings.sources import (
@@ -28,6 +29,7 @@ from pydantic_settings.sources import (
 from pydantic import Field, field_validator, model_validator
 from typing import Any, Dict, Self, Tuple
 from langcodes import Language
+from .version import __version__
 
 # -----------------------------------------------------------------------------
 
@@ -42,8 +44,13 @@ class YamlConfigSettingsSource(PydanticBaseSettingsSource):
             try:
                 with open(yaml_file, 'r', encoding='utf-8') as f:
                     self._yaml_data = yaml.safe_load(f) or {}
-            except (FileNotFoundError, yaml.YAMLError):
+            except FileNotFoundError:
                 self._yaml_data = {}
+
+        # Values like "env:MY_VAR" are read from the environment variable MY_VAR
+        for key, value in self._yaml_data.items():
+            if isinstance(value, str) and value.startswith("env:"):
+                self._yaml_data[key] = os.getenv(value[len("env:"):])
 
     def get_field_value(self, field_info, field_name: str) -> Tuple[Any, str, bool]:
         value = self._yaml_data.get(field_name)
@@ -70,14 +77,17 @@ class Settings(BaseSettings):
 
     info: bool = Field(default=False)
     backend: str = Field(default="")
-    po: str = Field(default="")
+    po: list[str] = Field(default_factory=list)
     src: str = Field(default=Language.make(language='en').language)
     dst: str = Field(default=Language.make(language='en').language)
-    fuzzy: bool = Field(default=True)
+    fuzzy: bool = Field(default=False)
     context: str = Field(default="")
     verbose: str = Field(default="warning")
     ascribe: bool = Field(default=False)
     config: str = Field(default="config.yaml")
+    dry_run: bool = Field(default=False)
+    output: str = Field(default="")
+    cache: str = Field(default="")
 
     # -------------------------------------------------------------------------
 
@@ -87,7 +97,7 @@ class Settings(BaseSettings):
         if info.data.get('info'):
             return v  # Skip validation if info is present
         if not v:
-            raise ValueError('po must be provided unless --info or --readme are used.')
+            raise ValueError('po must be provided unless --info is used.')
         return v
     # validate_po
 
@@ -113,30 +123,39 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
 
     @classmethod
-    def parse_cli_args(cls):
-        parser = argparse.ArgumentParser()
+    def parse_cli_args(cls, argv=None):
+        # Only the arguments given in the command line are returned, so the
+        # YAML file and the field defaults can fill in the rest
+        parser = argparse.ArgumentParser(argument_default=argparse.SUPPRESS)
+        parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
         parser.add_argument("--info", action='store_true',
                             help="Shows information about the backend")
         parser.add_argument("--backend", type=str,
                             help="Which backend to use")
-        parser.add_argument("--po", type=str,
-                            help="The path to the .po file")
-        parser.add_argument("--src", type=str, default=Language.make(language='en').language,
-                            help="The source language")
+        parser.add_argument("--po", type=str, nargs="+",
+                            help="The .po file(s) or directories containing .po files")
+        parser.add_argument("--src", type=str,
+                            help="The source language. Default: en")
         parser.add_argument("--dst", type=str,
                             help="The language to translate to")
         parser.add_argument("--fuzzy", action='store_true',
-                            help="Fuzzy translations?")
-        parser.add_argument("--context", type=str, default="",
+                            help="Remove the fuzzy flag from all entries before translating")
+        parser.add_argument("--context", type=str,
                             help="Optional default translation context for msgid without msgctxt")
-        parser.add_argument("--verbose", type=lambda x: x.lower(), default="warning",
-                            help="Show useful information. Possible values: debug, info, warning, error, critical. Default: warning")
+        parser.add_argument("--verbose", type=str.lower,
+                            choices=["debug", "info", "warning", "error", "critical"],
+                            help="Logging level. Default: warning")
         parser.add_argument("--ascribe", action='store_true',
                             help="Include a comment in each entry indicating that it was translated with AI")
-        parser.add_argument("--config", type=str, default="config.yaml", required=False,
-                            help="Path to the .yaml configuration file for the backend.")
-        args = parser.parse_args()
-        return args
+        parser.add_argument("--config", type=str,
+                            help="Path to the .yaml configuration file for the backend. Default: config.yaml")
+        parser.add_argument("--dry-run", action='store_true',
+                            help="Show the translations without saving any file")
+        parser.add_argument("--output", type=str,
+                            help="Save to this .po file (single input) or directory, instead of overwriting the input")
+        parser.add_argument("--cache", type=str,
+                            help="Path to a SQLite file used to cache translations between runs")
+        return parser.parse_args(argv)
     # parse_cli_args
 
     # -------------------------------------------------------------------------
@@ -148,12 +167,12 @@ class Settings(BaseSettings):
         init_settings: PydanticBaseSettingsSource,
         **kwargs
     ):
-        cli_args = cls.parse_cli_args()
-        yaml_source = YamlConfigSettingsSource(settings_cls, getattr(cli_args, 'config', None))
+        config_file = init_settings.init_kwargs.get('config', cls.model_fields['config'].default)
+        yaml_source = YamlConfigSettingsSource(settings_cls, config_file)
 
         return (
-            yaml_source,     # YAML
             init_settings,   # CLI args
+            yaml_source,     # YAML
         )
     # settings_customise_sources
 # Settings

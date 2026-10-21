@@ -1,11 +1,11 @@
 # gettext-translator-ollama
 
-Ollama implementation for `gettext-translator-service`.
+Ollama backend for [gettext-translator](https://github.com/rgglez/gettext-translator).
 
 ## Usage from gettext-translator
 
 ```bash
-python gettext_translator.py --backend ollama --config sample-ollama.yaml --src en --dst de_DE --po /path/to/example/messages.po
+gettext-translator --backend ollama --config ollama-sample.yaml --src en --dst de_DE --po /path/to/example/messages.po
 ```
 
 This command translates the `messages.po` file from English into German.
@@ -13,17 +13,15 @@ This command translates the `messages.po` file from English into German.
 ## Configuration
 
 * `ollama` the address:port of the Ollama server. For example: "127.0.0.1:11434"
-* `model` the model you want to use. See the Notes below.
+* `model` the model you want to use. See the recommended models below.
+* `temperature` optional. Default: 0.1.
 
-## Loading the plugin
+Thinking is disabled for thinking models (qwen3...), it slows the translation down and doesn't improve it.
 
-```python
-from gettext_translator_service import load_plugins
+## Installation
 
-plugins = load_plugins()
-impl_cls = plugins["TranslatorOllama"]
-impl = impl_cls()
-impl.connect()
+```bash
+pip install "gettext-translator[ollama]"
 ```
 
 ## Recommended Models for Ollama (2026)

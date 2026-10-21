@@ -12,16 +12,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.8\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. AI-translated
 msgid "Hola <b>%s</b>, ganaste $%s"
 msgstr ""
 
-#. AI-translated
 msgctxt "Pago"
 msgid "El abono ha sido aplicado a la cuenta en la moneda actual"
 msgstr ""
 
-#. AI-translated
 msgid "--- seleccione su sexo ---"
 msgstr ""
+
+msgctxt "Banco"
+msgid "Abono"
+msgstr ""
+
+msgctxt "Jardín"
+msgid "Abono"
+msgstr ""
+
+msgid "Tienes %d mensaje nuevo"
+msgid_plural "Tienes %d mensajes nuevos"
+msgstr[0] ""
+msgstr[1] ""

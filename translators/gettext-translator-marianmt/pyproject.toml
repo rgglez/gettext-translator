@@ -1,22 +1,25 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gettext-translator-marianmt"
-version = "0.0.1"
-description = "MarianMT implementation for translator-service"
-authors = [{ name="Rodolfo González González", email="code@rodolfo.gg" }]
+version = "0.1.0"
+description = "MarianMT (Helsinki-NLP) local backend for gettext-translator"
+authors = [{ name = "Rodolfo González González", email = "code@rodolfo.gg" }]
 readme = "README.md"
-license = { text = "GPL 3.0" }
+license = "GPL-3.0-or-later"
+requires-python = ">=3.12"
 dependencies = [
-    "gettext-translator-service>=0.0.1",
-    "transformers>=4.21.0",
-    "torch>=1.9.0",
-    "tokenizers>=0.13.0",
-    "rich>=12.0.0",
-    "sentencepiece"
+    "gettext-translator-service>=0.1,<0.2",
+    "transformers>=5.6.2",
+    "torch>=2.11.0",
+    "sentencepiece",
 ]
+
+[project.urls]
+Homepage = "https://github.com/rgglez/gettext-translator"
+Issues = "https://github.com/rgglez/gettext-translator/issues"
 
 [project.entry-points."gettext_translator_service.plugins"]
 marianmt = "gettext_translator_marianmt:TranslatorMarianMT"

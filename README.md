@@ -1,7 +1,8 @@
 # gettext-translator
 
 [![License](https://img.shields.io/badge/GitHub-GPL--3.0-informational)](https://www.gnu.org/licenses/gpl-3.0.html)
-![GitHub all releases](https://img.shields.io/github/downloads/rgglez/gettext-translator/total)
+[![CI](https://github.com/rgglez/gettext-translator/actions/workflows/ci.yml/badge.svg)](https://github.com/rgglez/gettext-translator/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/gettext-translator)](https://pypi.org/project/gettext-translator/)
 ![GitHub issues](https://img.shields.io/github/issues/rgglez/gettext-translator)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/y/rgglez/gettext-translator)
 ![GitHub stars](https://img.shields.io/github/stars/rgglez/gettext-translator?style=social)
@@ -13,11 +14,14 @@ This program uses several cloud and local AI models to translate [gettext](https
 
 * Supports several backends, both local HuggingFace models, self-hosted Ollama, and remote API services.
 * Extensible. You can write your own translation plugins.
-* Supports fuzzy translations.
-* Supports automatic translation of missing entries.
+* Translates only the missing entries, of one or many PO files, or whole directories.
+* Each unique string is translated once, even if it appears in many files.
+* Supports `msgctxt` for better contextual translation, and plural forms (`msgid_plural`).
+* Validates the translations: those that lose or change placeholders (`%s`, `%(name)s`, `{name}`) or HTML tags are discarded, so `msgfmt --check` keeps passing.
+* Optional cache of translations between runs.
+* Dry-run mode, and output to another file or directory.
 * Supports tagging of AI-generated translations.
 * Supports automatic detection of language.
-* Supports msgctxt field for better contextual translation.
 
 ## Backends
 
@@ -30,25 +34,51 @@ See the `README.md` file in each plugin's directory for examples and information
 - **NLLB** ([README](translators/gettext-translator-nllb/README.md)): local HuggingFace *NLLB* model, free, auth token might be required.
 - **Ollama** ([README](translators/gettext-translator-ollama/README.md)): self-hosted (by yourself) Ollama server running free models.
 
+## Installation
+
+Python 3.12 or newer is required. Install the program with the backends you want to use:
+
+```bash
+pip install "gettext-translator[ollama]"
+pip install "gettext-translator[chatgpt,gemini]"
+pip install "gettext-translator[all]"
+```
+
+### From source code
+
+Install the plugin interface, the program and the backends you need, from the root of the repository:
+
+```bash
+pip install -e translators/gettext-translator-service -e . -e translators/gettext-translator-ollama
+```
+
 ## General CLI arguments
 
 The command line tool supports the following arguments:
 
 - ```--info```: Shows information about the backend.
 - ```--backend```: Which backend to use.
-- ```--po```: The path to the .po file.
-- ```--src```: The source language.
-- ```--dst```: The language to translate to.
-- ```--fuzzy```: Fuzzy translations?
+- ```--po```: One or more .po files or directories. Directories are searched recursively for .po files.
+- ```--src```: The source language. Default: en.
+- ```--dst```: The language to translate to. Files whose `Language` header is a different language are skipped.
+- ```--fuzzy```: Remove the fuzzy flag from all the entries before translating.
 - ```--context```: Optional default translation context for msgid without msgctxt.
-- ```--ascribe```: Include a comment in each entry indicating that it was translated with AI.
-- ```--config```: Path to the YAML configuration file for the backend.
+- ```--ascribe```: Add an `AI-translated` comment to each translated entry. Existing comments are kept.
+- ```--config```: Path to the YAML configuration file for the backend. Default: config.yaml.
+- ```--dry-run```: Show the translations without saving any file.
+- ```--output```: Save to this .po file (single input file) or directory (keeping the relative paths), instead of overwriting the input files.
+- ```--cache```: Path to a SQLite file where the translations are cached, so they are not requested again in later runs. The cache is specific to the backend, model and languages.
 - ```--verbose```: Show useful information. Possible values: debug, info, warning, error, critical. Default: warning.
+- ```--version```: Shows the version.
 - ```--help```: Shows the help message.
+
+The exit code is 1 if there was an error, or if there were strings to translate but none could be translated.
 
 ### Per backend configuration
 
-To avoid cluttering of the command line arguments, each backend has its own configuration file, in YAML format. This file contains the backend's-specific options, as described in each plugin's `README.md` file. Please refer to those files (linked above), or use the `--info` argument todisplay the `README.md` and list the available options for each backend (view usage example below).
+To avoid cluttering of the command line arguments, each backend has its own configuration file, in YAML format. This file contains the backend's-specific options, as described in each plugin's `README.md` file. Please refer to those files (linked above), or use the `--info` argument to display the `README.md` and list the required options for each backend (view usage example below).
+
+Values with the form `"env:VARIABLE"` are read from the environment variable `VARIABLE`, which is useful for API keys.
 
 You must specify the path to the configuration file using the `--config` argument.
 
@@ -56,69 +86,70 @@ A sample configuration file for each backend is provided in each plugin's direct
 
 ## Usage examples
 
-First, change to the `src/gettext_translator` directory:
+View the README file for the plugin and which options are required for it:
 
 ```bash
-cd src/gettext_translator/
-```
-
-You can view the README file for the plugin and which options are available for it using the `--info` argument:
-
-```bash
-python gettext_translator.py --info --backend chatgpt
-```
-
-Show information about the ChatGPT backend:
-
-```bash
-python gettext_translator.py --info --backend chatgpt
+gettext-translator --info --backend chatgpt
 ```
 
 Translate using the Azure AI Translator backend:
 
 ```bash
-python gettext_translator.py --backend azure --src es --dst de_DE --config ../../translators/gettext-translator-azure/azure-sample.yaml --po ../../example/messages.po
+gettext-translator --backend azure --src es --dst de_DE --config translators/gettext-translator-azure/azure-sample.yaml --po example/messages.po
 ```
 
 Translate using the ChatGPT backend, adding a comment attributing translations to AI:
 
 ```bash
-python gettext_translator.py --backend chatgpt --src es --dst de_DE --config ../../translators/gettext-translator-chatgpt/chatgpt-sample.yaml --po ../../example/messages.po --ascribe=true
+gettext-translator --backend chatgpt --src es --dst de_DE --config translators/gettext-translator-chatgpt/chatgpt-sample.yaml --po example/messages.po --ascribe
 ```
 
-## Requirements
-
-See the `requirements.txt` files in the main CLI program directory and in each of the plugin directories.
-
-## Installation
-
-### From source code
-
-You can install the main CLI program and each plugin using `pip` from their respective root directories. For example:
-
-Change to a translator directory, for example:
+Preview the translation of all the German .po files of a project with Ollama, caching the results, and then save them (the second run uses the cache and doesn't call the model again):
 
 ```bash
-cd translators/gettext-translator-azure/
+gettext-translator --backend ollama --src en --dst de --config ollama.yaml --po locale/ --cache translations.db --dry-run
+gettext-translator --backend ollama --src en --dst de --config ollama.yaml --po locale/ --cache translations.db
 ```
 
-Install it:
+## Plural forms
 
-```bash
-pip install .
-```
-
-If you want to modify something, install the plugins in editable mode:
-
-```bash
-pip install -e .
-```
+The number of plural forms is read from the `Plural-Forms` header of each file (2 if it is missing). LLM backends (ChatGPT, Gemini, Ollama) translate every plural form. The machine translation backends (Azure, MarianMT, NLLB) translate the singular and the plural `msgid` separately, which is right for languages with two plural forms; for languages with more forms (Russian, Polish, Arabic...) use an LLM backend.
 
 ## Architecture
 
-This software was designed with extensibility as a priority, so it's not restricted to a single service or provider. It is based on an auto-discovery plugin system, and users can create additional plugins as needed.
+This software was designed with extensibility as a priority, so it's not restricted to a single service or provider. It is based on an auto-discovery plugin system, and users can create additional plugins as needed. See [gettext-translator-service](translators/gettext-translator-service/README.md) to write your own.
 
-![class diagram](class_diagram.png "Class Diagram")
+```mermaid
+classDiagram
+    class TranslatorService {
+        <<abstract>>
+        +REQUIRES_CONFIG: list[str]
+        +config: Settings
+        +configure()
+        +translate(items) list[dict]
+        +show_info()
+    }
+    class GettextTranslator {
+        +translate() bool
+    }
+    GettextTranslator --> TranslatorService : uses the plugin chosen with --backend
+    GettextTranslator --> TranslationCache : --cache
+    TranslatorService <|-- TranslatorAzure
+    TranslatorService <|-- TranslatorChatGPT
+    TranslatorService <|-- TranslatorGemini
+    TranslatorService <|-- TranslatorMarianMT
+    TranslatorService <|-- TranslatorNLLB
+    TranslatorService <|-- TranslatorOllama
+```
+
+## Development
+
+```bash
+make dev     # editable install of the packages and the dev tools
+make check   # lint, tests, build and twine check
+```
+
+Releases are published to PyPI by the `Publish` GitHub workflow when a `vX.Y.Z` tag is pushed (`make release`). Only the packages whose version changed are uploaded. Run `make help` for the other targets.
 
 ## Notes
 

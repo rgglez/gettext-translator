@@ -1,6 +1,0 @@
-gettext_translator_service
-transformers>=5.6.2
-torch>=2.11.0
-tokenizers>=0.22.2
-rich>=15.0.0
-sentencepiece

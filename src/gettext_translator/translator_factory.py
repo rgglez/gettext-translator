@@ -27,5 +27,6 @@ class TranslatorFactory:
             impl_cls = plugins[settings.backend]
             return impl_cls(settings)
         else:
-            raise ValueError("❌ Unknown translation backend")
+            installed = ', '.join(plugins) or 'none'
+            raise ValueError(f"❌ Unknown translation backend {settings.backend!r}. Installed: {installed}")
 # TranslatorFactory

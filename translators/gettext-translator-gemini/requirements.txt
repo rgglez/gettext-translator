@@ -1,2 +1,0 @@
-gettext_translator_service==0.0.1
-google-genai

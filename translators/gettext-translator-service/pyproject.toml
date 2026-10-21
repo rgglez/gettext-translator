@@ -1,12 +1,20 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gettext-translator-service"
-version = "0.0.1"
-description = "Core library with plugin interface for the translation services for gettext_translator"
-authors = [{ name="Rodolfo González González", email="github@rodolfo.gg" }]
+version = "0.1.0"
+description = "Core library with plugin interface for the translation services for gettext-translator"
+authors = [{ name = "Rodolfo González González", email = "code@rodolfo.gg" }]
 readme = "README.md"
-license = { text = "GPL 3.0" }
-dependencies = []
+license = "GPL-3.0-or-later"
+requires-python = ">=3.12"
+dependencies = [
+    "rich>=13",
+    "language-data>=1.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/rgglez/gettext-translator"
+Issues = "https://github.com/rgglez/gettext-translator/issues"
