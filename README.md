@@ -147,9 +147,10 @@ classDiagram
 ```bash
 make dev     # editable install of the packages and the dev tools
 make check   # lint, tests, build and twine check
+make bump    # bump the patch version and commit it
 ```
 
-Releases are published to PyPI by the `Publish` GitHub workflow when a `vX.Y.Z` tag is pushed (`make release`). Only the packages whose version changed are uploaded. Run `make help` for the other targets.
+To release, bump the version of `gettext-translator` with `make bump` (`PART=minor` or `PART=major` for the other parts), which commits it, then run `make release`: it tags `vX.Y.Z` and pushes the tag, and the `Publish` GitHub workflow uploads the packages to PyPI. Only the packages whose version changed are uploaded; the version of each backend is set in its own `pyproject.toml`. Run `make help` for the other targets.
 
 ## Notes
 
