@@ -35,4 +35,4 @@ pip install "gettext-translator[gemini]"
 
 Copyright (C) 2026 Rodolfo González González.
 
-Licensed under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+Licensed under [LGPL 3.0 or later](https://www.gnu.org/licenses/lgpl-3.0.html).

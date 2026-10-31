@@ -6,6 +6,8 @@ Plugin interface for [gettext-translator](https://github.com/rgglez/gettext-tran
 
 A plugin is a package that subclasses `TranslatorService` and registers it under the `gettext_translator_service.plugins` entry point group. The entry point name is the value of `--backend`.
 
+An independently written plugin may use a proprietary license when it uses this library through its interface. The LGPL explicitly treats subclassing a library class as using its interface; changes to the library itself remain subject to the LGPL.
+
 ```toml
 [project.entry-points."gettext_translator_service.plugins"]
 mybackend = "gettext_translator_mybackend:TranslatorMyBackend"
@@ -60,4 +62,4 @@ Items that couldn't be translated may be left out. `gettext-translator` validate
 
 Copyright (C) 2026 Rodolfo González González.
 
-Licensed under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+Licensed under [LGPL 3.0 or later](https://www.gnu.org/licenses/lgpl-3.0.html).

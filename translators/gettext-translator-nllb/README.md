@@ -20,6 +20,8 @@ This command translates the `messages.po` file from Spanish into German from Ger
 - [NLLB-200's 1.3B variant](https://huggingface.co/facebook/nllb-200-1.3B): Use `nllb-200-1.3B`
 - [NLLB-200's distilled 600M](https://huggingface.co/facebook/nllb-200-distilled-600M): Use: `nllb-200-distilled-600M`
 
+These model weights are downloaded separately and are licensed under CC BY-NC 4.0, which restricts commercial use. The LGPL below applies to this backend's code, not to the model weights.
+
 ## Installation
 
 ```bash
@@ -40,4 +42,4 @@ pip install "gettext-translator[nllb]"
 
 Copyright (C) 2026 Rodolfo González González.
 
-Licensed under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+Licensed under [LGPL 3.0 or later](https://www.gnu.org/licenses/lgpl-3.0.html).
