@@ -6,7 +6,7 @@ import polib
 import pytest
 
 from gettext_translator.cache import TranslationCache
-from gettext_translator.gettext_translator import GettextTranslator
+from gettext_translator.gettext_translator import GettextTranslator, validate
 from gettext_translator.settings import Settings
 from gettext_translator_service import TranslatorService, load_plugins, parse_json_response, translate_plain
 
@@ -80,6 +80,51 @@ def test_lost_placeholder_is_discarded(tmp_path):
     assert not make_translator(tmp_path, [po], broken=True).translate()
 
     assert polib.pofile(str(po))[0].msgstr == ""
+
+
+# Cases from the placeholder ticket: msgfmt --check-format accepts all of them
+@pytest.mark.parametrize("flags, msgid, msgstr", [
+    ((), "<invalid>", "<non valide>"),
+    (("c-format",), "%sinvalid ISA extension %s' ends with p in %s %s'",
+     "%sl'extension ISA non valide « %s » se termine par <nombre>p dans %s « %s »"),
+    (("c-format",), "<unknown: %#x>", "<inconnu : %#x>"),
+    (("kde-format",), "Battery: %1%", "Batterie : %1 %"),
+    (("kde-format",), "Battery: %1% (Charging)", "Batterie : %1 % (chargement)"),
+    ((), "Battery: %1%", "Batterie : %1 %"),
+    (("c-format",), "error: %s has %d items", "erreur : %2$d éléments dans %1$s"),
+    (("c-format",), "%s: <%s> property was incorrectly set to %d",
+     "%1$s : la propriété <%2$s> a été réglée incorrectement à %3$d"),
+    (("python-format",), "%(n)d of %(total)d", "%(total)d : %(n)d"),
+    (("python-brace-format",), "{name} has {{braces}}", "{name} a des accolades"),
+    ((), "Hola <b>%s</b>", "Hallo <b>%s</b>"),
+    ((), "100% done", "100 % terminé"),
+])
+def test_valid_placeholders(flags, msgid, msgstr):
+    assert validate(("", msgid, "", 0), {"msgstr": msgstr}, flags) == msgstr
+
+
+@pytest.mark.parametrize("flags, msgid, msgstr", [
+    (("c-format",), "file %s", "fichier"),
+    (("c-format",), "%ld bytes", "octets"),
+    ((), "%zu bytes", "octets"),
+    (("c-format",), "%s has %d", "%d dans %s"),
+    (("c-format",), "%s has %d", "%1$d dans %2$s"),
+    ((), "Hola <b>%s</b>", "Hallo %s"),
+    (("python-brace-format",), "{name} left", "parti"),
+    (("kde-format",), "Battery: %1%", "Batterie : %"),
+])
+def test_invalid_placeholders(flags, msgid, msgstr):
+    assert validate(("", msgid, "", 0), {"msgstr": msgstr}, flags) is None
+
+
+def test_flags_reach_validation(tmp_path):
+    po = write_po(tmp_path / "a.po", '#, kde-format\nmsgid "Battery: %1%"\nmsgstr ""\n')
+    translator = make_translator(tmp_path, [po])
+    translator.service.translate = lambda items: [{"n": 0, "msgstr": "Batterie : %1 %"}]
+
+    assert translator.translate()
+
+    assert polib.pofile(str(po))[0].msgstr == "Batterie : %1 %"
 
 
 def test_language_mismatch_leaves_file_untouched(tmp_path):

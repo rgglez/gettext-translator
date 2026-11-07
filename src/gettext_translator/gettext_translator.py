@@ -44,14 +44,64 @@ from .translator_factory import TranslatorFactory
 
 AI_COMMENT = "AI-translated"
 
-# printf-style (%s, %1$s, %(name)s, %.2f, %%), brace-style ({name}) and HTML tags (<b, </b)
-PLACEHOLDER_RE = re.compile(r"%(?:\d+\$|\([^)]*\))?[-+#0]*\d*(?:\.\d+)?[sdifouxXeEgGcr%]|\{[^{}]*\}|</?[a-zA-Z][\w-]*")
+# The gettext format flags whose placeholders are checked; any other entry gets every check below
+PRINTF_FLAGS = {"c-format", "objc-format", "python-format", "php-format"}
+NO_PRINTF_FLAGS = {"no-" + flag for flag in PRINTF_FLAGS}
+BRACE_FLAGS = {"python-brace-format"}
+QT_FLAGS = {"qt-format", "qt-plural-format", "kde-format"}
+
+# printf-style (%s, %1$s, %(name)s, %.2f, %ld); %% is matched only to be skipped. Groups: position, name, conversion
+PRINTF = (r"%%|%(?:(\d+)\$|\(([^)]*)\))?[-+#0{flags}]*(?:\d+|\*)?(?:\.(?:\d+|\*))?"
+          r"(?:hh|h|ll|l|L|q|j|z|t)?([diouxXeEfFgGaAcspr])")
+PRINTF_RE = re.compile(PRINTF.format(flags=" '"))
+# Without a format flag the space and ' flags are left out, so "100% done" is not read as "% d"
+LOOSE_PRINTF_RE = re.compile(PRINTF.format(flags=""))
+# Brace-style ({name}, {0}, {}); {{ and }} are literals
+BRACE_RE = re.compile(r"\{\{|\}\}|(\{[^{}]*\})")
+# Qt/KDE (%1, %L1); in "%1%" the second % is a literal
+QT_RE = re.compile(r"%%|(%L?\d+)")
+TAG_RE = re.compile(r"</?([a-zA-Z][\w-]*)")
+# ponytail: fixed list of HTML/Pango inline tags, so <number> or <invalid> are text, not markup.
+# KUIT tags (<command>, <placeholder>) clash with command-line metavariables; add them for kde-format if needed
+HTML_TAGS = frozenset("a b i u s em strong span br p code tt big small sub sup kbd pre ul ol li div img font hr "
+                      "h1 h2 h3 h4 h5 h6 table tr td th markup".split())
 
 # -------------------------------------------------------------------------
 
 
-def placeholders(text: str) -> Counter:
-    return Counter(PLACEHOLDER_RE.findall(text))
+def printf_args(text, regex):
+    """Returns the printf directives as "argument$conversion", so "%s %d" and "%2$d %1$s" give the same ones."""
+    args, n = [], 0
+    for position, name, conversion in regex.findall(text):
+        if conversion:  # not %%
+            if not position and not name:
+                n += 1
+            args.append(f"{position or name or n}${conversion}")
+    return args
+# printf_args
+
+# -------------------------------------------------------------------------
+
+
+def placeholders(text: str, flags=()) -> Counter:
+    """Returns the placeholders and tags of text, read with the syntax given by the entry's format flags."""
+    flags = set(flags)
+    found = [m.group(0) for m in TAG_RE.finditer(text) if m.group(1).lower() in HTML_TAGS]
+
+    if flags & (PRINTF_FLAGS | BRACE_FLAGS | QT_FLAGS):
+        if flags & PRINTF_FLAGS:
+            found += printf_args(text, PRINTF_RE)
+        if flags & BRACE_FLAGS:
+            found += [m for m in BRACE_RE.findall(text) if m]
+        if flags & QT_FLAGS:
+            found += [m for m in QT_RE.findall(text) if m]
+    else:
+        if not flags & NO_PRINTF_FLAGS:
+            found += printf_args(text, LOOSE_PRINTF_RE)
+        rest = LOOSE_PRINTF_RE.sub("", text)
+        found += [m for m in BRACE_RE.findall(rest) + QT_RE.findall(rest) if m]
+
+    return Counter(found)
 # placeholders
 
 # -------------------------------------------------------------------------
@@ -65,22 +115,25 @@ def nplurals(po_file) -> int:
 # -------------------------------------------------------------------------
 
 
-def validate(key, result):
-    """Returns the translation in result if it can be used for key, None otherwise."""
+def validate(key, result, flags=()):
+    """Returns the translation in result if it can be used for key, None otherwise. flags are the entry's flags."""
     _, msgid, plural, n = key
+
+    def found(text):
+        return placeholders(text, flags)
 
     if plural:
         forms = result.get("msgstr_plural")
         if not (isinstance(forms, list) and len(forms) == n and all(isinstance(f, str) and f for f in forms)):
             return None
         # Some forms may drop placeholders ("One file"), but the last and most general one must keep them
-        allowed = placeholders(msgid) | placeholders(plural)
-        if all(placeholders(f) <= allowed for f in forms) and placeholders(forms[-1]) == placeholders(plural):
+        allowed = found(msgid) | found(plural)
+        if all(found(f) <= allowed for f in forms) and found(forms[-1]) == found(plural):
             return forms
         return None
 
     msgstr = result.get("msgstr")
-    if isinstance(msgstr, str) and msgstr and placeholders(msgstr) == placeholders(msgid):
+    if isinstance(msgstr, str) and msgstr and found(msgstr) == found(msgid):
         return msgstr
     return None
 # validate
@@ -169,8 +222,8 @@ class GettextTranslator:
 
     # -------------------------------------------------------------------------
 
-    def request(self, pending):
-        """Sends the pending keys to the backend and returns the valid translations."""
+    def request(self, pending, flags):
+        """Sends the pending keys to the backend and returns the valid translations. flags maps keys to entry flags."""
         self.service.configure()
         results = self.service.translate([self.item(n, key) for n, key in enumerate(pending)])
 
@@ -180,7 +233,7 @@ class GettextTranslator:
             if not isinstance(n, int) or not 0 <= n < len(pending):
                 logging.warning("[❌] Discarding result with unknown item number: %r", result)
                 continue
-            value = validate(pending[n], result)
+            value = validate(pending[n], result, flags.get(pending[n], ()))
             if value is None:
                 logging.warning("[❌] Discarding invalid translation for %r: %r", pending[n][1], result)
                 continue
@@ -214,6 +267,7 @@ class GettextTranslator:
         # Group the untranslated entries of all the files by what has to be translated,
         # so each unique string is translated only once
         groups = {}
+        flags = {}  # key -> format flags of its entries, used to validate the translation
         loaded = []
         for path, root in files:
             po_file = self.load(path)
@@ -225,6 +279,7 @@ class GettextTranslator:
                 key = (entry.msgctxt or self.config.context, entry.msgid, entry.msgid_plural,
                        count if entry.msgid_plural else 0)
                 groups.setdefault(key, []).append(entry)
+                flags.setdefault(key, set()).update(entry.flags)
             loaded.append((path, root, po_file))
         # for
 
@@ -239,7 +294,7 @@ class GettextTranslator:
         pending = [key for key in groups if key not in translations]
         logging.info("[⚙️] %d strings to translate, %d from cache", len(pending), cached)
 
-        new = self.request(pending) if pending else {}
+        new = self.request(pending, flags) if pending else {}
         if self.cache:
             for key, value in new.items():
                 self.cache.put(key, value)
