@@ -1,6 +1,6 @@
 # gettext-translator
 
-[![License](https://img.shields.io/badge/GitHub-GPL--3.0-informational)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![License](https://img.shields.io/badge/GitHub-LGPL--3.0-informational)](https://www.gnu.org/licenses/lgpl-3.0.html)
 [![CI](https://github.com/rgglez/gettext-translator/actions/workflows/ci.yml/badge.svg)](https://github.com/rgglez/gettext-translator/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/gettext-translator)](https://pypi.org/project/gettext-translator/)
 ![GitHub issues](https://img.shields.io/github/issues/rgglez/gettext-translator)
@@ -31,7 +31,7 @@ See the `README.md` file in each plugin's directory for examples and information
 - **OpenAI ChatGPT** ([README](translators/gettext-translator-chatgpt/README.md)): remote API, several models, commercial, API key required.
 - **Google Gemini** ([README](translators/gettext-translator-gemini/README.md)): remote API, several models, commercial with a free layer, API key required.
 - **MarianMT** ([README](translators/gettext-translator-marianmt/README.md)): local HuggingFace *Helsinki-NLP* model, free, auth token might be required.
-- **NLLB** ([README](translators/gettext-translator-nllb/README.md)): local HuggingFace *NLLB* model, free, auth token might be required.
+- **NLLB** ([README](translators/gettext-translator-nllb/README.md)): local HuggingFace *NLLB* model, with noncommercial model weights (CC BY-NC 4.0); auth token might be required.
 - **Ollama** ([README](translators/gettext-translator-ollama/README.md)): self-hosted (by yourself) Ollama server running free models.
 
 ## Installation
@@ -149,7 +149,31 @@ make dev     # editable install of the packages and the dev tools
 make check   # lint, tests, build and twine check
 ```
 
-Releases are published to PyPI by the `Publish` GitHub workflow when a `vX.Y.Z` tag is pushed (`make release`). Only the packages whose version changed are uploaded. Run `make help` for the other targets.
+Run `make help` for the other targets.
+
+### Releasing
+
+Releases are published to PyPI by the `Publish` GitHub workflow, using Trusted Publishing.
+
+1. Commit your changes and check that the `CI` workflow passes.
+2. Bump the version, it is committed as `vX.Y.Z`:
+
+   ```bash
+   make bump              # 0.1.0 -> 0.1.1
+   make bump PART=minor   # 0.1.0 -> 0.2.0
+   make bump PART=major   # 0.1.0 -> 1.0.0
+   ```
+
+3. Optionally, publish to TestPyPI first: push the commit (`git push`), then run Actions → Publish → Run workflow → `testpypi`.
+4. Tag the new version and push it, the `Publish` workflow uploads the packages to PyPI:
+
+   ```bash
+   make release
+   ```
+
+Run `make bump` and `make release` as separate commands, since `make` reads the version once when it starts.
+
+Only `gettext-translator` is bumped by `make bump`. The version of each backend is set by hand in its own `pyproject.toml`; bump it when the backend changed. Only the packages whose version changed are uploaded.
 
 ## Notes
 
@@ -164,4 +188,6 @@ Releases are published to PyPI by the `Publish` GitHub workflow when a `vX.Y.Z` 
 
 Copyright (C) 2026 Rodolfo González González.
 
-Licensed under [GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+Licensed under [LGPL 3.0 or later](https://www.gnu.org/licenses/lgpl-3.0.html).
+
+Independent translation plugins may be distributed under proprietary licenses. Changes to this project's own code remain subject to the LGPL.

@@ -8,7 +8,8 @@ dynamic = ["version"]
 description = "Translate gettext .po files using cloud services and local AI models."
 authors = [{ name = "Rodolfo González González", email = "code@rodolfo.gg" }]
 readme = "README.md"
-license = "GPL-3.0-or-later"
+license = "LGPL-3.0-or-later"
+license-files = ["LICENSE", "LICENSE.LESSER"]
 requires-python = ">=3.12"
 keywords = ["gettext", "po", "translation", "i18n", "l10n", "llm"]
 classifiers = [
